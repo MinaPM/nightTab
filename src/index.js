@@ -20,6 +20,8 @@ component.bookmark.init();
 
 component.groupAndBookmark.init();
 
+component.bookmarkBrowser.init();
+
 component.pageLock.init();
 
 component.keyboard.init();

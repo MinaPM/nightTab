@@ -12,6 +12,7 @@ import { pageLock } from './pageLock';
 import { theme } from './theme';
 import { update } from './update';
 import { bookmark } from './bookmark';
+import { bookmarkBrowser } from './bookmarkBrowser';
 import { header } from './header';
 import { group } from './group';
 import { toolbar } from './toolbar';
@@ -35,6 +36,7 @@ export const component = {
   theme,
   update,
   bookmark,
+  bookmarkBrowser,
   header,
   group,
   form,

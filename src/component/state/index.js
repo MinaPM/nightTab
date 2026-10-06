@@ -69,7 +69,8 @@ state.default = {
     newTab: false,
     edit: false,
     add: false,
-    show: true
+    show: true,
+    browserSync: true
   },
   group: {
     area: { justify: 'left' },
@@ -274,6 +275,9 @@ state.set = {
       state.current.layout = dataToRestore.state.layout;
       state.current.header = dataToRestore.state.header;
       state.current.bookmark = dataToRestore.state.bookmark;
+      if (state.current.bookmark && state.current.bookmark.browserSync === undefined) {
+        state.current.bookmark.browserSync = true;
+      }
       state.current.group = dataToRestore.state.group;
       state.current.toolbar = dataToRestore.state.toolbar;
       console.log('setup restored');

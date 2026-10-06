@@ -3,6 +3,7 @@ import { message } from '../../message';
 import { state } from '../../state';
 import { data } from '../../data';
 import { bookmark } from '../../bookmark';
+import { bookmarkBrowser } from '../../bookmarkBrowser';
 import { layout } from '../../layout';
 import { groupAndBookmark } from '../../groupAndBookmark';
 
@@ -34,6 +35,12 @@ bookmarkSetting.control = {
 bookmarkSetting.disable = () => {
 
   if (state.get.current().bookmark.show) {
+    if (bookmarkSetting.control.general.browserSync) {
+      bookmarkSetting.control.general.browserSync.enable();
+    }
+    if (bookmarkSetting.control.general.browserSyncNow) {
+      bookmarkSetting.control.general.browserSyncNow.enable();
+    }
     bookmarkSetting.control.general.size.enable();
     bookmarkSetting.control.general.urlShow.enable();
     bookmarkSetting.control.general.lineShow.enable();
@@ -47,6 +54,12 @@ bookmarkSetting.disable = () => {
     bookmarkSetting.control.sort.icon.enable();
     bookmarkSetting.control.sort.name.enable();
   } else {
+    if (bookmarkSetting.control.general.browserSync) {
+      bookmarkSetting.control.general.browserSync.disable();
+    }
+    if (bookmarkSetting.control.general.browserSyncNow) {
+      bookmarkSetting.control.general.browserSyncNow.disable();
+    }
     bookmarkSetting.control.general.size.disable();
     bookmarkSetting.control.general.urlShow.disable();
     bookmarkSetting.control.general.lineShow.disable();
@@ -204,7 +217,42 @@ bookmarkSetting.general = (parent) => {
     }
   });
 
+  bookmarkSetting.control.general.browserSync = new Control_checkbox({
+    object: state.get.current(),
+    id: 'bookmark-browser-sync',
+    path: 'bookmark.browserSync',
+    labelText: message.get('menuContentBookmarkGeneralBrowserSyncLabel'),
+    description: message.get('menuContentBookmarkGeneralBrowserSyncDescription'),
+    action: () => {
+      data.save();
+      if (state.get.current().bookmark.browserSync) {
+        bookmarkBrowser.sync({ force: true });
+      }
+    }
+  });
+
+  bookmarkSetting.control.general.browserSyncNow = new Button({
+    text: message.get('menuContentBookmarkGeneralBrowserSyncNow'),
+    style: ['line'],
+    func: () => {
+      bookmarkBrowser.sync({ force: true }).then((result) => {
+        if (result && result.success) {
+          bookmarkSetting.control.general.browserSyncNow.text(`Synced ${result.count || 0} bookmarks`);
+          setTimeout(() => {
+            bookmarkSetting.control.general.browserSyncNow.text(message.get('menuContentBookmarkGeneralBrowserSyncNow'));
+          }, 3000);
+        }
+      });
+    }
+  });
+
   bookmarkSetting.control.general.area = node('div', [
+    bookmarkSetting.control.general.browserSync.wrap(),
+    form.wrap({
+      children: [
+        bookmarkSetting.control.general.browserSyncNow.button
+      ]
+    }),
     bookmarkSetting.control.general.urlShow.wrap(),
     bookmarkSetting.control.general.lineShow.wrap(),
     bookmarkSetting.control.general.shadowShow.wrap(),

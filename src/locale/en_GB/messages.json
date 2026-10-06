@@ -1535,6 +1535,18 @@
     "message": "Bookmark size",
     "description": "Range for bookmark size."
   },
+  "menuContentBookmarkGeneralBrowserSyncLabel": {
+    "message": "Sync browser bookmarks",
+    "description": "Checkbox for sync browser bookmarks."
+  },
+  "menuContentBookmarkGeneralBrowserSyncDescription": {
+    "message": "Automatically update nightTab when browser bookmarks change.",
+    "description": "Description for sync browser bookmarks."
+  },
+  "menuContentBookmarkGeneralBrowserSyncNow": {
+    "message": "Sync from browser now",
+    "description": "Button to sync bookmarks from browser now."
+  },
   "menuContentBookmarkStyleBlockLabel": {
     "message": "Block",
     "description": "Label for bookmark block style."
@@ -1746,6 +1758,10 @@
   "menuContentDataRestoreClipboard": {
     "message": "Import from clipboard",
     "description": "Button for clipboard backup data import."
+  },
+  "menuContentDataRestoreBrowser": {
+    "message": "Import from browser",
+    "description": "Button for browser bookmarks import."
   },
   "menuContentDataRestoreHelperPara1": {
     "message": "Restore a previously exported {appName} backup.",

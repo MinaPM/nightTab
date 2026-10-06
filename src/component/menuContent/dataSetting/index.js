@@ -1,6 +1,7 @@
 import { message } from '../../message';
 
 import { data } from '../../data';
+import { bookmarkBrowser } from '../../bookmarkBrowser';
 import { menu } from '../../menu';
 
 import * as form from '../../form';
@@ -50,6 +51,25 @@ dataSetting.restore = (parent) => {
     }
   });
 
+  dataSetting.control.restore.browser = new Button({
+    text: message.get('menuContentDataRestoreBrowser'),
+    style: ['line'],
+    func: () => {
+      bookmarkBrowser.sync({ force: true }).then((result) => {
+        if (result && result.success) {
+          data.feedback.clear.render(dataSetting.control.restore.feedback);
+          data.feedback.success.render(
+            dataSetting.control.restore.feedback,
+            `Imported ${result.count || 0} bookmarks (${result.groupCount || 0} groups)`
+          );
+        } else {
+          data.feedback.clear.render(dataSetting.control.restore.feedback);
+          data.feedback.empty.render(dataSetting.control.restore.feedback);
+        }
+      });
+    }
+  });
+
   dataSetting.control.restore.restoreHelper = new Control_helperText({
     text: [message.get('menuContentDataRestoreHelperPara1')]
   });
@@ -70,7 +90,8 @@ dataSetting.restore = (parent) => {
     },
     children: [
       dataSetting.control.restore.restoreElement.button,
-      dataSetting.control.restore.paste.button
+      dataSetting.control.restore.paste.button,
+      dataSetting.control.restore.browser.button
     ]
   });
 

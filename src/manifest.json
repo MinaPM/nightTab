@@ -5,6 +5,9 @@
   "version": "7.6.0",
   "manifest_version": 3,
   "default_locale": "en_GB",
+  "permissions": [
+    "bookmarks"
+  ],
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
