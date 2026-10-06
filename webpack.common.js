@@ -56,6 +56,12 @@ module.exports = {
         from: './src/locale',
         to: './_locales'
       }, {
+        from: './src/locale/en_US',
+        to: './_locales/en-US'
+      }, {
+        from: './src/locale/en_GB',
+        to: './_locales/en-GB'
+      }, {
         from: './src/initialBackground.js',
         to: './initialBackground.js'
       }]

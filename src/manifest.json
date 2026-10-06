@@ -4,12 +4,17 @@
   "description": "__MSG_appDescription__",
   "version": "7.6.0",
   "manifest_version": 3,
-  "default_locale": "en_GB",
+  "default_locale": "en_US",
   "permissions": [
     "bookmarks"
   ],
   "chrome_url_overrides": {
     "newtab": "index.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "nighttab@zombiefox"
+    }
   },
   "icons": {
     "16": "icon/icon-16.png",
