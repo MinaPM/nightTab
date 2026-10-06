@@ -16,6 +16,7 @@ import { StagedGroup } from '../stagedGroup';
 import { Modal } from '../modal';
 
 import { node } from '../../utility/node';
+import { clearChildNode } from '../../utility/clearChildNode';
 import { applyCSSVar } from '../../utility/applyCSSVar';
 import { applyCSSClass } from '../../utility/applyCSSClass';
 import { applyCSSState } from '../../utility/applyCSSState';
@@ -150,39 +151,74 @@ bookmark.item = {
       }
     }
   },
-  render: () => {
+  addBookmarkToGroup: (bookmarkData, groupIndex, bookmarkIndex) => {
 
-    const addBookmarkToGroup = (bookmarkData, groupIndex, bookmarkIndex) => {
+    const currentBookmarkData = new StagedBookmark(bookmarkData);
 
-      const currentBookmarkData = new StagedBookmark(bookmarkData);
+    currentBookmarkData.position.origin.group = groupIndex;
 
-      currentBookmarkData.position.origin.group = groupIndex;
+    currentBookmarkData.position.origin.item = bookmarkIndex;
 
-      currentBookmarkData.position.origin.item = bookmarkIndex;
+    currentBookmarkData.position.destination.group = groupIndex;
 
-      currentBookmarkData.position.destination.group = groupIndex;
+    currentBookmarkData.position.destination.item = bookmarkIndex;
 
-      currentBookmarkData.position.destination.item = bookmarkIndex;
+    const bookmarkTile = new BookmarkTile({ bookmarkData: currentBookmarkData });
 
-      const bookmarkTile = new BookmarkTile({ bookmarkData: currentBookmarkData });
+    bookmarkTile.tile().groupIndex = groupIndex;
 
-      bookmarkTile.tile().groupIndex = groupIndex;
+    bookmarkTile.tile().index = bookmarkIndex;
 
-      bookmarkTile.tile().index = bookmarkIndex;
+    if (group.area.current[groupIndex]) {
 
       group.area.current[groupIndex].element.body.appendChild(bookmarkTile.tile());
 
       bookmark.tile.current.push(bookmarkTile);
 
-    };
+    }
 
-    const addEmptyGroup = (groupIndex) => {
+  },
+  addEmptyGroup: (groupIndex) => {
 
-      const emptyGroupItem = new GroupEmpty({ groupIndex: groupIndex });
+    const emptyGroupItem = new GroupEmpty({ groupIndex: groupIndex });
+
+    if (group.area.current[groupIndex]) {
 
       group.area.current[groupIndex].element.body.appendChild(emptyGroupItem.empty());
 
-    };
+    }
+
+  },
+  renderGroup: (groupIndex) => {
+
+    const targetGroupArea = group.area.current[groupIndex];
+
+    if (!targetGroupArea) return;
+
+    clearChildNode(targetGroupArea.element.body);
+
+    bookmark.tile.current = bookmark.tile.current.filter((t) => t.tile().groupIndex !== groupIndex);
+
+    const items = group.nav.getCurrentItems(groupIndex);
+
+    if (items.length > 0) {
+
+      items.forEach((item, bookmarkIndex) => {
+
+        bookmark.item.addBookmarkToGroup(item, groupIndex, bookmarkIndex);
+
+      });
+
+    } else {
+
+      bookmark.item.addEmptyGroup(groupIndex);
+
+    }
+
+    targetGroupArea.updateBreadcrumb();
+
+  },
+  render: () => {
 
     if (state.get.current().search) {
 
@@ -202,7 +238,7 @@ bookmark.item = {
 
               if (item.searchMatch) {
 
-                addBookmarkToGroup(item, groupIndex, bookmarkIndex);
+                bookmark.item.addBookmarkToGroup(item, groupIndex, bookmarkIndex);
 
               }
 
@@ -214,30 +250,13 @@ bookmark.item = {
 
       }
 
-
     } else {
 
       // not searching
 
       bookmark.all.forEach((item, i) => {
 
-        const groupIndex = i;
-
-        if (item.items.length > 0) {
-
-          item.items.forEach((item, i) => {
-
-            const bookmarkIndex = i;
-
-            addBookmarkToGroup(item, groupIndex, bookmarkIndex);
-
-          });
-
-        } else {
-
-          addEmptyGroup(groupIndex);
-
-        }
+        bookmark.item.renderGroup(i);
 
       });
 
@@ -434,6 +453,14 @@ bookmark.add = {
 bookmark.sort = {
   sortable: [],
   bind: () => {
+
+    if (bookmark.sort.sortable.length > 0) {
+      bookmark.sort.sortable.forEach((item) => {
+        if (item && typeof item.destroy === 'function') {
+          item.destroy();
+        }
+      });
+    }
 
     bookmark.sort.sortable = [];
 

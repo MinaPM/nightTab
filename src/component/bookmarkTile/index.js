@@ -127,7 +127,7 @@ const BookmarkTile = function({
       classList: ['bookmark-control-button', 'bookmark-control-edit'],
       func: () => {
 
-        let newBookmarkData = new StagedBookmark();
+        const newBookmarkData = new StagedBookmark();
 
         newBookmarkData.link = JSON.parse(JSON.stringify(bookmarkData.link));
 
@@ -251,14 +251,21 @@ const BookmarkTile = function({
       bookmarkData = newBookmarkData;
     }
 
-    if (isValidString(bookmarkData.link.url) && !preview) {
-      this.element.content.link.setAttribute('href', trimString(bookmarkData.link.url));
-    } else {
+    if (bookmarkData.link.isFolder) {
+      this.element.bookmark.classList.add('is-bookmark-folder');
       this.element.content.link.setAttribute('href', '#');
-    }
+      this.element.content.link.removeAttribute('target');
+    } else {
+      this.element.bookmark.classList.remove('is-bookmark-folder');
+      if (isValidString(bookmarkData.link.url) && !preview) {
+        this.element.content.link.setAttribute('href', trimString(bookmarkData.link.url));
+      } else {
+        this.element.content.link.setAttribute('href', '#');
+      }
 
-    if (state.get.current().bookmark.newTab && !preview) {
-      this.element.content.link.setAttribute('target', '_blank');
+      if (state.get.current().bookmark.newTab && !preview) {
+        this.element.content.link.setAttribute('target', '_blank');
+      }
     }
 
     if (!preview) {
@@ -531,7 +538,22 @@ const BookmarkTile = function({
 
     this.element.back.appendChild(this.element.control);
 
-    if (isValidString(bookmarkData.link.url)) {
+    if (bookmarkData.link.isFolder && !preview) {
+      this.element.content.link.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!state.get.current().bookmark.edit) {
+          group.nav.enter(bookmarkData.position.destination.group, bookmarkData.link);
+        }
+      });
+
+      const count = (bookmarkData.link.items || []).length;
+      const countText = count === 1 ? '1 item' : `${count} items`;
+      this.element.url.text.textContent = countText;
+      this.element.url.text.title = (bookmarkData.link.display?.name?.text || 'Folder') + ` (${countText})`;
+      this.element.url.url.appendChild(this.element.url.text);
+      this.element.back.appendChild(this.element.url.url);
+    } else if (isValidString(bookmarkData.link.url)) {
 
       this.element.url.text.textContent = trimString(bookmarkData.link.url).replace(/^https?:\/\//i, '').replace('www.', '').replace(/\/+$/, '');
 

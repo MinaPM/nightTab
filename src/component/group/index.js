@@ -29,6 +29,72 @@ group.area = {
   current: []
 };
 
+group.nav = {
+  stack: {},
+  timers: {},
+
+  getStack: (groupIndex) => {
+    if (!group.nav.stack[groupIndex]) {
+      group.nav.stack[groupIndex] = [];
+    }
+    return group.nav.stack[groupIndex];
+  },
+
+  getCurrentItems: (groupIndex) => {
+    const stack = group.nav.getStack(groupIndex);
+    if (stack.length === 0) {
+      return (bookmark.all[groupIndex] && bookmark.all[groupIndex].items) || [];
+    }
+    return stack[stack.length - 1].items || [];
+  },
+
+  enter: (groupIndex, folderItem) => {
+    const stack = group.nav.getStack(groupIndex);
+    stack.push(folderItem);
+    group.nav.update(groupIndex);
+  },
+
+  back: (groupIndex) => {
+    const stack = group.nav.getStack(groupIndex);
+    if (stack.length > 0) {
+      stack.pop();
+      group.nav.update(groupIndex);
+    }
+  },
+
+  to: (groupIndex, index) => {
+    if (index < 0) {
+      group.nav.stack[groupIndex] = [];
+    } else {
+      group.nav.stack[groupIndex] = group.nav.stack[groupIndex].slice(0, index + 1);
+    }
+    group.nav.update(groupIndex);
+  },
+
+  update: (groupIndex) => {
+    const targetGroupArea = group.area.current[groupIndex];
+    if (!targetGroupArea) return;
+
+    if (group.nav.timers[groupIndex]) {
+      window.clearTimeout(group.nav.timers[groupIndex]);
+    }
+
+    const bodyEl = targetGroupArea.element.body;
+    bodyEl.classList.add('is-group-navigating');
+
+    group.nav.timers[groupIndex] = window.setTimeout(() => {
+      bookmark.item.renderGroup(groupIndex);
+      bodyEl.classList.remove('is-group-navigating');
+      bodyEl.classList.add('is-group-entering');
+
+      group.nav.timers[groupIndex] = window.setTimeout(() => {
+        bodyEl.classList.remove('is-group-entering');
+        delete group.nav.timers[groupIndex];
+      }, 400);
+    }, 120);
+  }
+};
+
 group.item = {
   mod: {
     add: (groupData) => {
@@ -150,6 +216,13 @@ group.item = {
   clear: () => {
 
     group.area.current = [];
+
+    group.nav.stack = {};
+
+    for (const key in group.nav.timers) {
+      window.clearTimeout(group.nav.timers[key]);
+    }
+    group.nav.timers = {};
 
     clearChildNode(bookmark.element.group);
 

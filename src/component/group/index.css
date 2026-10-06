@@ -97,6 +97,13 @@
   gap: calc(var(--layout-space) * var(--layout-gutter));
   grid-template-columns: repeat(auto-fill, minmax(var(--group-cell-width), 1fr));
   grid-auto-flow: dense;
+  transition: opacity var(--layout-transition-extra-fast), transform var(--layout-transition-extra-fast);
+}
+
+.group-body.is-group-navigating {
+  opacity: 0;
+  transform: scale(0.98);
+  pointer-events: none;
 }
 
 .is-group-collapse .group-body {
@@ -204,4 +211,102 @@
   --button-link-text-focus-hover: var(--theme-background-color-text);
   --button-link-text-active: var(--theme-background-color-text);
   --button-link-text-disabled: var(--theme-background-color-text);
+}
+
+.group.is-group-drilldown .group-name {
+  overflow: visible;
+}
+
+.group-body.is-group-entering .bookmark,
+.is-group-drilldown .bookmark {
+  animation: bookmark-folder-enter var(--layout-transition-fast) var(--layout-timing-ease) backwards;
+  animation-delay: min(calc(var(--bookmark-transition-delay, 0) * 0.018s), 0.25s);
+}
+
+@keyframes bookmark-folder-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.group-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 1.1em;
+  flex-wrap: wrap;
+  animation: appear var(--layout-transition-fast) var(--layout-timing-ease);
+}
+
+.group-breadcrumb-back.button {
+  padding: 0.25em 0.65em;
+  font-size: 0.85em;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: transform var(--layout-transition-extra-fast), background-color var(--layout-transition-extra-fast);
+}
+
+.group-breadcrumb-back.button:hover {
+  transform: translateX(-3px);
+}
+
+.group-breadcrumb-back.button:active {
+  transform: translateX(-5px);
+}
+
+.group-breadcrumb-trail {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  flex-wrap: wrap;
+}
+
+.group-breadcrumb-link {
+  color: inherit;
+  opacity: 0.65;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.group-breadcrumb-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.group-breadcrumb-sep {
+  opacity: 0.4;
+  user-select: none;
+}
+
+.group-breadcrumb-current {
+  font-weight: 600;
+  opacity: 1;
+}
+
+.bookmark.is-bookmark-folder {
+  cursor: pointer;
+  transition: transform var(--layout-transition-extra-fast), box-shadow var(--layout-transition-extra-fast);
+}
+
+.bookmark.is-bookmark-folder:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group-body,
+  .group-body.is-group-entering .bookmark,
+  .is-group-drilldown .bookmark,
+  .group-breadcrumb,
+  .group-breadcrumb-back.button {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
 }

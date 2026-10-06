@@ -71,61 +71,72 @@ bookmarkBrowser.createBookmarkItem = (treeNode, existingMap) => {
   return item;
 };
 
+bookmarkBrowser.convertFolder = (node, existingMap) => {
+  const folder = JSON.parse(JSON.stringify(bookmarkDefault));
+  folder.isFolder = true;
+  folder.url = '';
+  folder.timestamp = node.dateAdded || Date.now();
+  folder.display.name.show = true;
+  folder.display.name.text = node.title || 'Folder';
+  folder.display.visual.show = true;
+  folder.display.visual.type = 'icon';
+  folder.display.visual.icon = {
+    name: 'folder',
+    prefix: 'fas',
+    label: 'Folder'
+  };
+
+  const children = [];
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((child) => {
+      if (child.url) {
+        if (!child.url.startsWith('javascript:')) {
+          children.push(bookmarkBrowser.createBookmarkItem(child, existingMap));
+        }
+      } else if (child.children) {
+        children.push(bookmarkBrowser.convertFolder(child, existingMap));
+      }
+    });
+  }
+
+  folder.items = children;
+  return folder;
+};
+
 bookmarkBrowser.convertTreeToGroups = (tree, existingMap) => {
   if (!tree || tree.length === 0) return [];
   const root = tree[0];
   const groups = [];
 
-  const traverse = (node, path) => {
-    if (!node) return;
+  const processCategory = (categoryNode) => {
+    if (!categoryNode || !categoryNode.children || categoryNode.children.length === 0) return;
 
-    const directBookmarks = [];
-    const subFolders = [];
-
-    if (node.children && node.children.length > 0) {
-      node.children.forEach((child) => {
-        if (child.url) {
-          if (!child.url.startsWith('javascript:')) {
-            directBookmarks.push(child);
-          }
-        } else if (child.children) {
-          subFolders.push(child);
+    const items = [];
+    categoryNode.children.forEach((child) => {
+      if (child.url) {
+        if (!child.url.startsWith('javascript:')) {
+          items.push(bookmarkBrowser.createBookmarkItem(child, existingMap));
         }
-      });
-    }
-
-    if (directBookmarks.length > 0) {
-      let groupName = node.title || 'Bookmarks';
-      if (path && path.length > 0) {
-        groupName = [...path, node.title].filter(Boolean).join(' / ');
+      } else if (child.children) {
+        items.push(bookmarkBrowser.convertFolder(child, existingMap));
       }
-      const items = directBookmarks.map((b) => bookmarkBrowser.createBookmarkItem(b, existingMap));
+    });
+
+    if (items.length > 0) {
       const groupObj = JSON.parse(JSON.stringify(groupDefault));
-      groupObj.name.text = groupName;
+      groupObj.name.text = categoryNode.title || 'Bookmarks';
       groupObj.name.show = true;
       groupObj.items = items;
       groups.push(groupObj);
     }
-
-    subFolders.forEach((sub) => {
-      let nextPath;
-      if (!node.title || node.id === '0') {
-        nextPath = [];
-      } else if (node.parentId === '0' || node.id === '1' || node.id === '2' || node.id === 'mobile') {
-        nextPath = [];
-      } else {
-        nextPath = path && path.length > 0 ? [...path, node.title] : [node.title];
-      }
-      traverse(sub, nextPath);
-    });
   };
 
   if (root.children && root.children.length > 0) {
     root.children.forEach((child) => {
-      traverse(child, []);
+      processCategory(child);
     });
   } else {
-    traverse(root, []);
+    processCategory(root);
   }
 
   return groups;
@@ -138,7 +149,13 @@ bookmarkBrowser.isPreset = (groups) => {
 
 bookmarkBrowser.makeSummary = (groups) => {
   if (!groups || !Array.isArray(groups)) return '';
-  return groups.map((g) => `${g.name?.text || ''}:${(g.items || []).map((i) => `${i.url}|${i.display?.name?.text || ''}`).join(',')}`).join(';;;');
+  const serializeItem = (item) => {
+    if (item.isFolder) {
+      return `F:${item.display?.name?.text || ''}:[${(item.items || []).map(serializeItem).join(',')}]`;
+    }
+    return `${item.url}|${item.display?.name?.text || ''}`;
+  };
+  return groups.map((g) => `${g.name?.text || ''}:${(g.items || []).map(serializeItem).join(',')}`).join(';;;');
 };
 
 bookmarkBrowser.getApi = () => {
@@ -203,13 +220,19 @@ bookmarkBrowser.sync = async ({ force = false, silent = false } = {}) => {
   }
 
   const existingMap = new Map();
+  const populateMap = (items) => {
+    if (!items || !Array.isArray(items)) return;
+    items.forEach((item) => {
+      if (item.url) {
+        existingMap.set(item.url, item);
+      } else if (item.isFolder && item.items) {
+        populateMap(item.items);
+      }
+    });
+  };
   if (bookmark.all && Array.isArray(bookmark.all)) {
     bookmark.all.forEach((g) => {
-      if (g.items && Array.isArray(g.items)) {
-        g.items.forEach((item) => {
-          if (item.url) existingMap.set(item.url, item);
-        });
-      }
+      populateMap(g.items);
     });
   }
 

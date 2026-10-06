@@ -153,19 +153,28 @@ export const Search = function () {
 
       const searchString = trimString(this.element.input.text.value).toLowerCase();
 
+      const matchItem = (entry) => {
+        entry.searchMatch = false;
+        const matchUrl = isValidString(entry.url) && entry.url.toLowerCase().includes(searchString);
+        const matchName = isValidString(entry.display?.name?.text) && trimString(entry.display.name.text).toLowerCase().includes(searchString);
+        if (matchUrl || matchName) {
+          entry.searchMatch = true;
+        }
+        if (entry.isFolder && entry.items) {
+          entry.items.forEach((child) => {
+            if (matchItem(child)) {
+              entry.searchMatch = true;
+            }
+          });
+        }
+        return entry.searchMatch;
+      };
+
       bookmark.all.forEach((item) => {
 
-        item.items.forEach((item) => {
+        item.items.forEach((entry) => {
 
-          item.searchMatch = false;
-
-          let matchUrl = isValidString(item.url) && item.url.toLowerCase().includes(searchString);
-
-          let matchName = isValidString(item.display.name.text) && trimString(item.display.name.text).toLowerCase().includes(searchString);
-
-          if (matchUrl || matchName) {
-            item.searchMatch = true;
-          }
+          matchItem(entry);
 
         });
 

@@ -106,7 +106,7 @@ export const GroupArea = function({
       classList: ['group-control-button', 'group-control-edit'],
       func: () => {
 
-        let newGroupData = new StagedGroup();
+        const newGroupData = new StagedGroup();
 
         newGroupData.group = JSON.parse(JSON.stringify(groupData.group));
 
@@ -184,29 +184,34 @@ export const GroupArea = function({
       }
     }),
     open: () => {
+      const currentItems = group.nav.getCurrentItems(groupData.position.origin);
+      const urls = [];
+      const collect = (list) => {
+        if (!list) return;
+        list.forEach((item) => {
+          if (item.url) {
+            urls.push(item.url);
+          } else if (item.isFolder && item.items) {
+            collect(item.items);
+          }
+        });
+      };
+      collect(currentItems);
 
-      if ('tabs' in chrome) {
-
+      const api = (typeof browser !== 'undefined' && browser.tabs) ? browser.tabs : (typeof chrome !== 'undefined' ? chrome.tabs : null);
+      if (api && urls.length > 0) {
         if (state.get.current().bookmark.newTab) {
-
-          groupData.group.items.forEach((item) => {
-            chrome.tabs.create({ url: item.url });
+          urls.forEach((url) => {
+            api.create({ url });
           });
-
         } else {
-
-          const first = groupData.group.items.shift();
-
-          groupData.group.items.forEach((item) => {
-            chrome.tabs.create({ url: item.url });
+          const first = urls.shift();
+          urls.forEach((url) => {
+            api.create({ url });
           });
-
-          window.location.href = first.url;
-
+          window.location.href = first;
         }
-
       }
-
     }
   };
 
@@ -299,11 +304,77 @@ export const GroupArea = function({
 
   };
 
+  this.updateBreadcrumb = () => {
+    const groupIndex = groupData.position.origin;
+    const stack = group.nav.getStack(groupIndex);
+    const rootName = groupData.group.name.text || 'Bookmarks';
+
+    clearChildNode(this.element.name.name);
+
+    if (stack.length === 0) {
+      this.element.name.text.innerHTML = rootName;
+      this.element.name.name.appendChild(this.element.name.text);
+      this.element.group.classList.remove('is-group-drilldown');
+      if (state.get.current().group.edit) {
+        this.control.enable();
+      }
+    } else {
+      this.element.group.classList.add('is-group-drilldown');
+      this.control.disable();
+
+      const breadcrumbWrap = node('div|class:group-breadcrumb');
+
+      const backButton = new Button({
+        text: 'Back',
+        style: ['line'],
+        iconName: 'arrowBack',
+        classList: ['group-breadcrumb-back'],
+        func: () => {
+          group.nav.back(groupIndex);
+        }
+      });
+      breadcrumbWrap.appendChild(backButton.button);
+
+      const pathTrail = node('span|class:group-breadcrumb-trail');
+
+      const rootLink = node('a|class:group-breadcrumb-link,href:#');
+      rootLink.textContent = rootName;
+      rootLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        group.nav.to(groupIndex, -1);
+      });
+      pathTrail.appendChild(rootLink);
+
+      stack.forEach((folder, idx) => {
+        const sep = node('span|class:group-breadcrumb-sep');
+        sep.textContent = ' / ';
+        pathTrail.appendChild(sep);
+
+        const folderName = folder.display?.name?.text || folder.name || 'Folder';
+
+        if (idx === stack.length - 1) {
+          const currentSpan = node('span|class:group-breadcrumb-current');
+          currentSpan.textContent = folderName;
+          pathTrail.appendChild(currentSpan);
+        } else {
+          const folderLink = node('a|class:group-breadcrumb-link,href:#');
+          folderLink.textContent = folderName;
+          folderLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            group.nav.to(groupIndex, idx);
+          });
+          pathTrail.appendChild(folderLink);
+        }
+      });
+
+      breadcrumbWrap.appendChild(pathTrail);
+      this.element.name.name.appendChild(breadcrumbWrap);
+    }
+  };
+
   this.assemble = () => {
 
-    this.element.name.text.innerHTML = groupData.group.name.text;
-
-    this.element.name.name.appendChild(this.element.name.text);
+    this.updateBreadcrumb();
 
     this.element.control.group.appendChild(this.control.button.up.button);
 
