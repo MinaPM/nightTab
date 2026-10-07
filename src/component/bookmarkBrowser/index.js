@@ -4,6 +4,7 @@ import { bookmark } from '../bookmark';
 import { bookmarkDefault } from '../bookmarkDefault';
 import { groupDefault } from '../groupDefault';
 import { groupAndBookmark } from '../groupAndBookmark';
+import { getFaviconUrl } from '../../utility/getFaviconUrl';
 
 const bookmarkBrowser = {};
 
@@ -45,7 +46,110 @@ bookmarkBrowser.getInitials = (title, url) => {
   return 'B';
 };
 
+bookmarkBrowser.faviconCache = null;
+
+bookmarkBrowser.loadFaviconCache = () => {
+  if (bookmarkBrowser.faviconCache !== null) return bookmarkBrowser.faviconCache;
+  try {
+    const raw = localStorage.getItem('nightTabFaviconCache');
+    bookmarkBrowser.faviconCache = raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    bookmarkBrowser.faviconCache = {};
+  }
+  return bookmarkBrowser.faviconCache;
+};
+
+bookmarkBrowser.saveFaviconCache = () => {
+  try {
+    if (bookmarkBrowser.faviconCache) {
+      localStorage.setItem('nightTabFaviconCache', JSON.stringify(bookmarkBrowser.faviconCache));
+    }
+  } catch (e) {
+    // ignore
+  }
+};
+
+bookmarkBrowser.recordFavicon = (pageUrl, favIconUrl) => {
+  if (!pageUrl || !favIconUrl) return;
+  if (favIconUrl.startsWith('chrome://') || favIconUrl.startsWith('about:') || favIconUrl.startsWith('moz-extension:')) return;
+
+  const cache = bookmarkBrowser.loadFaviconCache();
+  let changed = false;
+
+  try {
+    const parsed = new URL(pageUrl);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      if (cache[pageUrl] !== favIconUrl) {
+        cache[pageUrl] = favIconUrl;
+        changed = true;
+      }
+      if (cache[parsed.origin] !== favIconUrl) {
+        cache[parsed.origin] = favIconUrl;
+        changed = true;
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  if (changed) {
+    bookmarkBrowser.saveFaviconCache();
+  }
+
+  const provider = state.get.current()?.bookmark?.faviconService || 'native';
+  if (provider === 'none') return;
+
+  let bookmarkUpdated = false;
+  const updateItem = (item) => {
+    if (!item) return;
+    if (item.isFolder && item.items) {
+      item.items.forEach(updateItem);
+      return;
+    }
+    if (!item.url) return;
+    try {
+      const itemParsed = new URL(item.url);
+      const targetParsed = new URL(pageUrl);
+      if (item.url === pageUrl || itemParsed.origin === targetParsed.origin) {
+        if (item.display?.visual?.image?.url !== favIconUrl) {
+          if (!item.display) item.display = {};
+          if (!item.display.visual) item.display.visual = {};
+          if (!item.display.visual.image) item.display.visual.image = { url: '' };
+          item.display.visual.image.url = favIconUrl;
+          item.display.visual.type = 'image';
+          bookmarkUpdated = true;
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  if (bookmark.all && Array.isArray(bookmark.all)) {
+    bookmark.all.forEach((g) => {
+      (g.items || []).forEach(updateItem);
+    });
+  }
+
+  if (bookmarkUpdated) {
+    data.save();
+    clearTimeout(bookmarkBrowser.renderTimer);
+    bookmarkBrowser.renderTimer = setTimeout(() => {
+      groupAndBookmark.render();
+    }, 400);
+  }
+};
+
+bookmarkBrowser.getFaviconUrl = (url) => {
+  const provider = state.get.current()?.bookmark?.faviconService || 'native';
+  const cache = bookmarkBrowser.loadFaviconCache();
+  return getFaviconUrl(url, provider, cache);
+};
+
 bookmarkBrowser.createBookmarkItem = (treeNode, existingMap) => {
+  const provider = state.get.current()?.bookmark?.faviconService || 'native';
+  const cache = bookmarkBrowser.loadFaviconCache();
+
   const existing = existingMap && existingMap.get(treeNode.url);
   if (existing) {
     const clone = JSON.parse(JSON.stringify(existing));
@@ -56,6 +160,19 @@ bookmarkBrowser.createBookmarkItem = (treeNode, existingMap) => {
     if (treeNode.dateAdded) {
       clone.timestamp = treeNode.dateAdded;
     }
+
+    if (provider === 'none') {
+      clone.display.visual.type = 'letter';
+    } else {
+      const favicon = getFaviconUrl(treeNode.url, provider, cache);
+      if (favicon) {
+        clone.display.visual.type = 'image';
+        if (!clone.display.visual.image) clone.display.visual.image = { url: '' };
+        clone.display.visual.image.url = favicon;
+      } else if (clone.display.visual.type === 'image' && !clone.display.visual.image?.url) {
+        clone.display.visual.type = 'letter';
+      }
+    }
     return clone;
   }
 
@@ -65,8 +182,20 @@ bookmarkBrowser.createBookmarkItem = (treeNode, existingMap) => {
   item.display.name.show = true;
   item.display.name.text = treeNode.title || treeNode.url;
   item.display.visual.show = true;
-  item.display.visual.type = 'letter';
   item.display.visual.letter.text = bookmarkBrowser.getInitials(treeNode.title, treeNode.url);
+
+  if (provider === 'none') {
+    item.display.visual.type = 'letter';
+  } else {
+    const favicon = getFaviconUrl(treeNode.url, provider, cache);
+    if (favicon) {
+      item.display.visual.type = 'image';
+      if (!item.display.visual.image) item.display.visual.image = { url: '' };
+      item.display.visual.image.url = favicon;
+    } else {
+      item.display.visual.type = 'letter';
+    }
+  }
 
   return item;
 };
@@ -153,7 +282,7 @@ bookmarkBrowser.makeSummary = (groups) => {
     if (item.isFolder) {
       return `F:${item.display?.name?.text || ''}:[${(item.items || []).map(serializeItem).join(',')}]`;
     }
-    return `${item.url}|${item.display?.name?.text || ''}`;
+    return `${item.url}|${item.display?.name?.text || ''}|${item.display?.visual?.type || ''}|${item.display?.visual?.image?.url || ''}`;
   };
   return groups.map((g) => `${g.name?.text || ''}:${(g.items || []).map(serializeItem).join(',')}`).join(';;;');
 };
@@ -292,6 +421,17 @@ bookmarkBrowser.listen = () => {
   if (api.onChanged) api.onChanged.addListener(onChange);
   if (api.onMoved) api.onMoved.addListener(onChange);
   if (api.onChildrenReordered) api.onChildrenReordered.addListener(onChange);
+
+  const tabsApi = (typeof browser !== 'undefined' && browser.tabs) ? browser.tabs : (typeof chrome !== 'undefined' ? chrome.tabs : null);
+  if (tabsApi && tabsApi.onUpdated) {
+    tabsApi.onUpdated.addListener((tabId, changeInfo, tab) => {
+      const favUrl = changeInfo.favIconUrl || (tab && tab.favIconUrl);
+      const pageUrl = (tab && tab.url) || changeInfo.url;
+      if (favUrl && pageUrl) {
+        bookmarkBrowser.recordFavicon(pageUrl, favUrl);
+      }
+    });
+  }
 };
 
 bookmarkBrowser.init = () => {

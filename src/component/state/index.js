@@ -70,7 +70,8 @@ state.default = {
     edit: false,
     add: false,
     show: true,
-    browserSync: true
+    browserSync: true,
+    faviconService: 'native'
   },
   group: {
     area: { justify: 'left' },
@@ -277,6 +278,9 @@ state.set = {
       state.current.bookmark = dataToRestore.state.bookmark;
       if (state.current.bookmark && state.current.bookmark.browserSync === undefined) {
         state.current.bookmark.browserSync = true;
+      }
+      if (state.current.bookmark && !state.current.bookmark.faviconService) {
+        state.current.bookmark.faviconService = 'native';
       }
       state.current.group = dataToRestore.state.group;
       state.current.toolbar = dataToRestore.state.toolbar;

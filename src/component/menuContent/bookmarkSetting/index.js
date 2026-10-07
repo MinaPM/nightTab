@@ -246,6 +246,23 @@ bookmarkSetting.general = (parent) => {
     }
   });
 
+  bookmarkSetting.control.general.faviconService = new Control_radio({
+    object: state.get.current(),
+    label: 'Favicon Provider',
+    radioGroup: [
+      { id: 'bookmark-favicon-native', labelText: 'Native & Local Cache (Recommended)', description: 'Uses local browser cache and passive tab visits. 100% private, zero external requests.', value: 'native' },
+      { id: 'bookmark-favicon-duckduckgo', labelText: 'DuckDuckGo Favicon Service', description: 'Fetches icons via DuckDuckGo. Strictly blocks private/intranet domains.', value: 'duckduckgo' },
+      { id: 'bookmark-favicon-google', labelText: 'Google Favicon Service', description: 'Fetches icons via Google S2. Strictly blocks private/intranet domains.', value: 'google' },
+      { id: 'bookmark-favicon-none', labelText: 'Monogram Letters Only', description: 'Uses styled initial letters. No image icons.', value: 'none' }
+    ],
+    groupName: 'bookmark-favicon-service',
+    path: 'bookmark.faviconService',
+    action: () => {
+      data.save();
+      bookmarkBrowser.sync({ force: true });
+    }
+  });
+
   bookmarkSetting.control.general.area = node('div', [
     bookmarkSetting.control.general.browserSync.wrap(),
     form.wrap({
@@ -253,6 +270,7 @@ bookmarkSetting.general = (parent) => {
         bookmarkSetting.control.general.browserSyncNow.button
       ]
     }),
+    bookmarkSetting.control.general.faviconService.wrap(),
     bookmarkSetting.control.general.urlShow.wrap(),
     bookmarkSetting.control.general.lineShow.wrap(),
     bookmarkSetting.control.general.shadowShow.wrap(),

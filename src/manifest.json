@@ -6,7 +6,8 @@
   "manifest_version": 3,
   "default_locale": "en_US",
   "permissions": [
-    "bookmarks"
+    "bookmarks",
+    "tabs"
   ],
   "chrome_url_overrides": {
     "newtab": "index.html"

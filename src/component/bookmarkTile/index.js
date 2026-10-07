@@ -466,6 +466,9 @@ const BookmarkTile = function({
             if (isValidString(bookmarkData.link.display.visual.image.url)) {
               this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.image);
               this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
+            } else if (isValidString(bookmarkData.link.display.visual.letter.text)) {
+              this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.letter);
+              this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
             }
             break;
         }

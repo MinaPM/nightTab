@@ -1,4 +1,5 @@
 import { message } from '../message';
+import { state } from '../state';
 
 import { bookmark } from '../bookmark';
 import { bookmarkDefault } from '../bookmarkDefault';
@@ -29,6 +30,7 @@ import { isValidString } from '../../utility/isValidString';
 import { ordinalNumber } from '../../utility/ordinalNumber';
 import { randomString } from '../../utility/randomString';
 import { randomNumber } from '../../utility/randomNumber';
+import { getFaviconUrl } from '../../utility/getFaviconUrl';
 
 import './index.css';
 
@@ -101,6 +103,22 @@ export const BookmarkForm = function({
       placeholder: message.get('bookmarkFormUrlPlaceholder'),
       labelText: message.get('bookmarkFormUrlLabel'),
       action: () => {
+        if (bookmarkData.type.new && (!bookmarkData.link.display.visual.image.url || bookmarkData.link.display.visual.type === 'image')) {
+          const provider = state.get.current()?.bookmark?.faviconService || 'native';
+          let cache = {};
+          try {
+            const raw = localStorage.getItem('nightTabFaviconCache');
+            cache = raw ? JSON.parse(raw) : {};
+          } catch (e) {
+            cache = {};
+          }
+          const favicon = getFaviconUrl(bookmarkData.link.url, provider, cache);
+          if (favicon) {
+            bookmarkData.link.display.visual.type = 'image';
+            bookmarkData.link.display.visual.image.url = favicon;
+            this.update();
+          }
+        }
         this.preview.update.assemble(bookmarkData);
       }
     }),
@@ -305,6 +323,79 @@ export const BookmarkForm = function({
             labelText: message.get('bookmarkFormDisplayVisualImageUrlLabel'),
             srOnly: true,
             action: () => {
+              this.preview.update.assemble(bookmarkData);
+            }
+          }),
+          faviconGoogle: new Button({
+            text: 'Google',
+            style: ['line'],
+            size: 'small',
+            title: 'Use Google S2 Favicon service',
+            func: () => {
+              const url = bookmarkData.link.url;
+              if (!url) return;
+              const favicon = getFaviconUrl(url, 'google');
+              if (favicon) {
+                bookmarkData.link.display.visual.type = 'image';
+                bookmarkData.link.display.visual.image.url = favicon;
+                this.disable();
+                this.update();
+                this.preview.update.assemble(bookmarkData);
+              }
+            }
+          }),
+          faviconDuckDuckGo: new Button({
+            text: 'DuckDuckGo',
+            style: ['line'],
+            size: 'small',
+            title: 'Use DuckDuckGo Favicon service',
+            func: () => {
+              const url = bookmarkData.link.url;
+              if (!url) return;
+              const favicon = getFaviconUrl(url, 'duckduckgo');
+              if (favicon) {
+                bookmarkData.link.display.visual.type = 'image';
+                bookmarkData.link.display.visual.image.url = favicon;
+                this.disable();
+                this.update();
+                this.preview.update.assemble(bookmarkData);
+              }
+            }
+          }),
+          faviconNative: new Button({
+            text: 'Local Cache',
+            style: ['line'],
+            size: 'small',
+            title: 'Use locally cached / native favicon',
+            func: () => {
+              const url = bookmarkData.link.url;
+              if (!url) return;
+              let cache = {};
+              try {
+                const raw = localStorage.getItem('nightTabFaviconCache');
+                cache = raw ? JSON.parse(raw) : {};
+              } catch (e) {
+                cache = {};
+              }
+              const favicon = getFaviconUrl(url, 'native', cache);
+              if (favicon) {
+                bookmarkData.link.display.visual.type = 'image';
+                bookmarkData.link.display.visual.image.url = favicon;
+                this.disable();
+                this.update();
+                this.preview.update.assemble(bookmarkData);
+              }
+            }
+          }),
+          clear: new Button({
+            text: 'Clear',
+            iconName: 'cross',
+            style: ['line'],
+            size: 'small',
+            title: 'Clear image URL and revert to monogram initials',
+            func: () => {
+              bookmarkData.link.display.visual.image.url = '';
+              this.update();
               this.preview.update.assemble(bookmarkData);
             }
           })
@@ -727,6 +818,22 @@ export const BookmarkForm = function({
                 children: [
                   form.indent({
                     children: [
+                      form.wrap({
+                        children: [
+                          form.label({
+                            text: 'Favicon & Image Source',
+                            description: 'Fetch the site favicon or enter a custom image URL below:'
+                          }),
+                          form.group({
+                            children: [
+                              this.control.bookmark.display.visual.image.faviconGoogle.button,
+                              this.control.bookmark.display.visual.image.faviconDuckDuckGo.button,
+                              this.control.bookmark.display.visual.image.faviconNative.button,
+                              this.control.bookmark.display.visual.image.clear.button
+                            ]
+                          })
+                        ]
+                      }),
                       this.control.bookmark.display.visual.image.url.wrap()
                     ]
                   })
@@ -1088,6 +1195,10 @@ export const BookmarkForm = function({
       this.control.bookmark.display.visual.icon.preview.enable();
       this.control.bookmark.display.visual.icon.remove.enable();
       this.control.bookmark.display.visual.image.url.enable();
+      this.control.bookmark.display.visual.image.faviconGoogle.enable();
+      this.control.bookmark.display.visual.image.faviconDuckDuckGo.enable();
+      this.control.bookmark.display.visual.image.faviconNative.enable();
+      this.control.bookmark.display.visual.image.clear.enable();
       this.control.bookmark.display.visual.size.enable();
 
       switch (bookmarkData.link.display.visual.type) {
@@ -1097,6 +1208,10 @@ export const BookmarkForm = function({
           this.control.bookmark.display.visual.icon.preview.disable();
           this.control.bookmark.display.visual.icon.remove.disable();
           this.control.bookmark.display.visual.image.url.disable();
+          this.control.bookmark.display.visual.image.faviconGoogle.disable();
+          this.control.bookmark.display.visual.image.faviconDuckDuckGo.disable();
+          this.control.bookmark.display.visual.image.faviconNative.disable();
+          this.control.bookmark.display.visual.image.clear.disable();
           break;
 
         case 'icon':
@@ -1105,6 +1220,10 @@ export const BookmarkForm = function({
           this.control.bookmark.display.visual.icon.preview.enable();
           this.control.bookmark.display.visual.icon.remove.enable();
           this.control.bookmark.display.visual.image.url.disable();
+          this.control.bookmark.display.visual.image.faviconGoogle.disable();
+          this.control.bookmark.display.visual.image.faviconDuckDuckGo.disable();
+          this.control.bookmark.display.visual.image.faviconNative.disable();
+          this.control.bookmark.display.visual.image.clear.disable();
           break;
 
         case 'image':
@@ -1113,6 +1232,10 @@ export const BookmarkForm = function({
           this.control.bookmark.display.visual.icon.preview.disable();
           this.control.bookmark.display.visual.icon.remove.disable();
           this.control.bookmark.display.visual.image.url.enable();
+          this.control.bookmark.display.visual.image.faviconGoogle.enable();
+          this.control.bookmark.display.visual.image.faviconDuckDuckGo.enable();
+          this.control.bookmark.display.visual.image.faviconNative.enable();
+          this.control.bookmark.display.visual.image.clear.enable();
           break;
       }
     } else {
@@ -1122,6 +1245,10 @@ export const BookmarkForm = function({
       this.control.bookmark.display.visual.icon.preview.disable();
       this.control.bookmark.display.visual.icon.remove.disable();
       this.control.bookmark.display.visual.image.url.disable();
+      this.control.bookmark.display.visual.image.faviconGoogle.disable();
+      this.control.bookmark.display.visual.image.faviconDuckDuckGo.disable();
+      this.control.bookmark.display.visual.image.faviconNative.disable();
+      this.control.bookmark.display.visual.image.clear.disable();
       this.control.bookmark.display.visual.size.disable();
     }
 
