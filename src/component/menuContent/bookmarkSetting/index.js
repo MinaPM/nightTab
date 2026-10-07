@@ -56,6 +56,9 @@ bookmarkSetting.disable = () => {
         bookmarkSetting.control.general.folderPreviewShape.disable();
       }
     }
+    if (bookmarkSetting.control.general.separatorStyle) {
+      bookmarkSetting.control.general.separatorStyle.enable();
+    }
     bookmarkSetting.control.general.newTab.enable();
     bookmarkSetting.control.style.enable();
     bookmarkSetting.control.orientation.orientationElement.enable();
@@ -80,6 +83,9 @@ bookmarkSetting.disable = () => {
     }
     if (bookmarkSetting.control.general.folderPreviewShape) {
       bookmarkSetting.control.general.folderPreviewShape.disable();
+    }
+    if (bookmarkSetting.control.general.separatorStyle) {
+      bookmarkSetting.control.general.separatorStyle.disable();
     }
     bookmarkSetting.control.general.newTab.disable();
     bookmarkSetting.control.style.disable();
@@ -313,6 +319,22 @@ bookmarkSetting.general = (parent) => {
     }
   });
 
+  bookmarkSetting.control.general.separatorStyle = new Control_radio({
+    object: state.get.current(),
+    label: 'Bookmark Separators',
+    radioGroup: [
+      { id: 'bookmark-separator-style-line', labelText: 'Visual Divider Line', description: 'Render browser bookmark separators as divider lines.', value: 'line' },
+      { id: 'bookmark-separator-style-hidden', labelText: 'Hide', description: 'Do not display bookmark separators.', value: 'hidden' }
+    ],
+    groupName: 'bookmark-separator-style',
+    path: 'bookmark.separatorStyle',
+    action: () => {
+      applyCSSClass('bookmark.separatorStyle');
+      groupAndBookmark.render();
+      data.save();
+    }
+  });
+
   bookmarkSetting.control.general.area = node('div', [
     bookmarkSetting.control.general.browserSync.wrap(),
     form.wrap({
@@ -323,6 +345,7 @@ bookmarkSetting.general = (parent) => {
     bookmarkSetting.control.general.faviconService.wrap(),
     bookmarkSetting.control.general.folderPreview.wrap(),
     bookmarkSetting.control.general.folderPreviewShape.wrap(),
+    bookmarkSetting.control.general.separatorStyle.wrap(),
     bookmarkSetting.control.general.urlShow.wrap(),
     bookmarkSetting.control.general.lineShow.wrap(),
     bookmarkSetting.control.general.shadowShow.wrap(),

@@ -1231,3 +1231,148 @@
 .is-theme-background-type-accent .bookmark-sort-placeholder {
   box-shadow: var(--edge-on-accent);
 }
+
+/* Bookmark Separator */
+.bookmark.is-bookmark-separator {
+  grid-column: 1 / -1;
+  height: 1.5em;
+  min-height: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+  background: none !important;
+  border: none !important;
+  margin: calc(var(--layout-space) * 0.25 * var(--layout-gutter)) 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bookmark.is-bookmark-separator,
+.bookmark.is-bookmark-separator:focus-within,
+.bookmark.is-bookmark-separator:focus,
+.bookmark.is-bookmark-separator:hover,
+.bookmark.is-bookmark-separator:active {
+  transform: none !important;
+}
+
+.bookmark.is-bookmark-separator .bookmark-front {
+  position: relative;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  height: 100% !important;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.bookmark.is-bookmark-separator .bookmark-link {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: default;
+  pointer-events: none;
+}
+
+.bookmark-separator-line {
+  display: block;
+  width: 100%;
+  height: max(1px, calc(var(--layout-line-width) * 1));
+  background-color: hsla(var(--theme-primary-040), 0.5);
+  border-radius: calc(var(--theme-radius) * 0.01em);
+  transition: background-color var(--layout-transition-fast);
+}
+
+.is-theme-background-type-accent .bookmark-separator-line {
+  background-color: hsla(var(--theme-accent-text), 0.35);
+}
+
+.is-theme-background-type-color .bookmark-separator-line {
+  background-color: hsla(var(--theme-background-color-text), 0.35);
+}
+
+.bookmark.is-bookmark-separator .bookmark-back {
+  display: none;
+}
+
+.bookmark.is-bookmark-separator .bookmark-url {
+  display: none !important;
+}
+
+/* Edit mode for Bookmark Separator */
+.is-bookmark-edit .bookmark.is-bookmark-separator {
+  pointer-events: all;
+  height: var(--bookmark-edit-height-short);
+  min-height: var(--bookmark-edit-height-short);
+}
+
+.is-bookmark-edit .bookmark.is-bookmark-separator .bookmark-front {
+  display: none;
+}
+
+.is-bookmark-edit .bookmark.is-bookmark-separator .bookmark-back {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  clip-path: none !important;
+  border-radius: calc(var(--theme-radius) * 0.01em);
+}
+
+.is-bookmark-edit .bookmark.is-bookmark-separator .bookmark-control {
+  pointer-events: all;
+  height: 100%;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.is-bookmark-edit .bookmark.is-bookmark-separator .bookmark-control-edit {
+  display: none !important;
+}
+
+.is-bookmark-edit .bookmark.is-bookmark-separator .bookmark-control-button {
+  width: 2.5em;
+  height: 2.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hidden separator style */
+.is-bookmark-separatorstyle-hidden .bookmark.is-bookmark-separator {
+  display: none !important;
+}
+
+/* Hide separator during search */
+.is-search .bookmark.is-bookmark-separator,
+.is-search-show .bookmark.is-bookmark-separator {
+  display: none !important;
+}
+
+/* Grid layout adjustment when separator is present */
+.group-body:has(.bookmark.is-bookmark-separator) {
+  grid-auto-flow: row;
+  grid-auto-rows: auto;
+}
+
+.group-body:has(.bookmark.is-bookmark-separator) .bookmark:not(.is-bookmark-separator) {
+  min-height: var(--group-cell-height);
+}
+
+.is-bookmark-separatorstyle-hidden .group-body:has(.bookmark.is-bookmark-separator) {
+  grid-auto-flow: dense;
+  grid-auto-rows: var(--group-cell-height);
+}

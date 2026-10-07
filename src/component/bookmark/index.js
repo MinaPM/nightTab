@@ -583,7 +583,8 @@ bookmark.init = () => {
   applyCSSClass([
     'bookmark.item.justify',
     'bookmark.orientation',
-    'bookmark.style'
+    'bookmark.style',
+    'bookmark.separatorStyle'
   ]);
   applyCSSState([
     'bookmark.show',

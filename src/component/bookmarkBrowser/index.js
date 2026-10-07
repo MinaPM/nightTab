@@ -200,6 +200,31 @@ bookmarkBrowser.createBookmarkItem = (treeNode, existingMap) => {
   return item;
 };
 
+bookmarkBrowser.isSeparatorNode = (node) => {
+  if (!node) return false;
+  if (node.type === 'separator') return true;
+  if (!node.url && !node.children && (!node.title || node.title.trim() === '')) return true;
+  if (node.title && (/^[-—_─\s]{3,}$/.test(node.title.trim()) || node.title.trim() === '------' || node.title.trim() === '---')) return true;
+  if (node.url) {
+    const url = node.url.trim().toLowerCase();
+    if (url.startsWith('data:text/html') || url === 'about:blank') return true;
+    if (url.includes('separator.mayastudios.com') || url.includes('separator.host') || url.includes('diviide.com')) return true;
+    if (url === 'http://-' || url === 'https://-' || url === 'http://--') return true;
+  }
+  return false;
+};
+
+bookmarkBrowser.createSeparatorItem = (node) => {
+  const item = JSON.parse(JSON.stringify(bookmarkDefault));
+  item.isSeparator = true;
+  item.url = '';
+  item.timestamp = node?.dateAdded || Date.now();
+  item.display.name.show = false;
+  item.display.name.text = '';
+  item.display.visual.show = false;
+  return item;
+};
+
 bookmarkBrowser.convertFolder = (node, existingMap) => {
   const folder = JSON.parse(JSON.stringify(bookmarkDefault));
   folder.isFolder = true;
@@ -218,7 +243,9 @@ bookmarkBrowser.convertFolder = (node, existingMap) => {
   const children = [];
   if (node.children && node.children.length > 0) {
     node.children.forEach((child) => {
-      if (child.url) {
+      if (bookmarkBrowser.isSeparatorNode(child)) {
+        children.push(bookmarkBrowser.createSeparatorItem(child));
+      } else if (child.url) {
         if (!child.url.startsWith('javascript:')) {
           children.push(bookmarkBrowser.createBookmarkItem(child, existingMap));
         }
@@ -242,7 +269,9 @@ bookmarkBrowser.convertTreeToGroups = (tree, existingMap) => {
 
     const items = [];
     categoryNode.children.forEach((child) => {
-      if (child.url) {
+      if (bookmarkBrowser.isSeparatorNode(child)) {
+        items.push(bookmarkBrowser.createSeparatorItem(child));
+      } else if (child.url) {
         if (!child.url.startsWith('javascript:')) {
           items.push(bookmarkBrowser.createBookmarkItem(child, existingMap));
         }
@@ -279,6 +308,9 @@ bookmarkBrowser.isPreset = (groups) => {
 bookmarkBrowser.makeSummary = (groups) => {
   if (!groups || !Array.isArray(groups)) return '';
   const serializeItem = (item) => {
+    if (item.isSeparator) {
+      return `SEP`;
+    }
     if (item.isFolder) {
       return `F:${item.display?.name?.text || ''}:[${(item.items || []).map(serializeItem).join(',')}]`;
     }

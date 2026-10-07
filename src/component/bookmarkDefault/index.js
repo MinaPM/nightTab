@@ -16,5 +16,6 @@ export const bookmarkDefault = {
   border: 0,
   shape: { wide: false, tall: false },
   timestamp: null,
-  folderPreviewShape: 'default'
+  folderPreviewShape: 'default',
+  isSeparator: false
 };

@@ -252,11 +252,19 @@ const BookmarkTile = function({
       bookmarkData = newBookmarkData;
     }
 
-    if (bookmarkData.link.isFolder) {
+    if (bookmarkData.link.isSeparator) {
+      this.element.bookmark.classList.add('is-bookmark-separator');
+      this.element.bookmark.classList.remove('is-bookmark-folder');
+      this.element.content.link.removeAttribute('href');
+      this.element.content.link.removeAttribute('target');
+      this.element.content.link.setAttribute('tabindex', '-1');
+    } else if (bookmarkData.link.isFolder) {
+      this.element.bookmark.classList.remove('is-bookmark-separator');
       this.element.bookmark.classList.add('is-bookmark-folder');
       this.element.content.link.setAttribute('href', '#');
       this.element.content.link.removeAttribute('target');
     } else {
+      this.element.bookmark.classList.remove('is-bookmark-separator');
       this.element.bookmark.classList.remove('is-bookmark-folder');
       if (isValidString(bookmarkData.link.url) && !preview) {
         this.element.content.link.setAttribute('href', trimString(bookmarkData.link.url));
@@ -512,7 +520,12 @@ const BookmarkTile = function({
 
   this.assemble = () => {
 
-    if (bookmarkData.link.display.visual.show || bookmarkData.link.display.name.show) {
+    if (bookmarkData.link.isSeparator) {
+      const line = node('div|class:bookmark-separator-line');
+      this.element.content.link.appendChild(line);
+      this.element.content.link.removeAttribute('href');
+      this.element.content.link.setAttribute('tabindex', '-1');
+    } else if (bookmarkData.link.display.visual.show || bookmarkData.link.display.name.show) {
       if (bookmarkData.link.display.visual.show) {
         let isFolderPreview = false;
         if (bookmarkData.link.isFolder && state.get.current()?.bookmark?.folderPreview !== false) {
@@ -564,7 +577,7 @@ const BookmarkTile = function({
       this.element.content.link.appendChild(this.element.content.display.wrap);
     }
 
-    if (bookmarkData.link.background.show) {
+    if (!bookmarkData.link.isSeparator && bookmarkData.link.background.show) {
 
       switch (bookmarkData.link.background.type) {
 
@@ -621,7 +634,11 @@ const BookmarkTile = function({
 
     this.element.back.appendChild(this.element.control);
 
-    if (bookmarkData.link.isFolder && !preview) {
+    if (bookmarkData.link.isSeparator) {
+      this.element.content.link.addEventListener('click', (e) => {
+        e.preventDefault();
+      });
+    } else if (bookmarkData.link.isFolder && !preview) {
       this.element.content.link.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();

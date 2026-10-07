@@ -73,7 +73,8 @@ state.default = {
     browserSync: true,
     faviconService: 'native',
     folderPreview: true,
-    folderPreviewShape: 'tile'
+    folderPreviewShape: 'tile',
+    separatorStyle: 'line'
   },
   group: {
     area: { justify: 'left' },
@@ -242,7 +243,8 @@ state.option = {
   bookmark: {
     item: { justify: ['left', 'center', 'right'] },
     orientation: ['top', 'bottom'],
-    style: ['block', 'list']
+    style: ['block', 'list'],
+    separatorStyle: ['line', 'hidden']
   },
   group: {
     area: { justify: ['left', 'center', 'right'] },
@@ -289,6 +291,9 @@ state.set = {
       }
       if (state.current.bookmark && !state.current.bookmark.folderPreviewShape) {
         state.current.bookmark.folderPreviewShape = 'tile';
+      }
+      if (state.current.bookmark && !state.current.bookmark.separatorStyle) {
+        state.current.bookmark.separatorStyle = 'line';
       }
       state.current.group = dataToRestore.state.group;
       state.current.toolbar = dataToRestore.state.toolbar;

@@ -155,6 +155,9 @@ export const Search = function () {
 
       const matchItem = (entry) => {
         entry.searchMatch = false;
+        if (entry.isSeparator) {
+          return false;
+        }
         const matchUrl = isValidString(entry.url) && entry.url.toLowerCase().includes(searchString);
         const matchName = isValidString(entry.display?.name?.text) && trimString(entry.display.name.text).toLowerCase().includes(searchString);
         if (matchUrl || matchName) {
