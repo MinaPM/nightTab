@@ -122,6 +122,15 @@ export const BookmarkForm = function({
         this.preview.update.assemble(bookmarkData);
       }
     }),
+    hidden: {
+      show: new Control_checkbox({
+        object: bookmarkData.link,
+        path: 'hidden',
+        id: 'bookmark-hidden',
+        labelText: message.get('bookmarkFormHideLabel') || 'Hide Bookmark',
+        description: message.get('bookmarkFormHideDescription') || 'Hide this bookmark from the new tab page.'
+      })
+    },
     display: {
       alignment: new Control_radioGrid({
         object: bookmarkData.link,
@@ -1027,6 +1036,8 @@ export const BookmarkForm = function({
                 this.control.bookmark.shape.wide.wrap(),
                 this.control.bookmark.shape.tall.wrap(),
                 node('hr'),
+                this.control.bookmark.hidden.show.wrap(),
+                node('hr'),
                 this.control.propagate.layoutAlert.wrap()
               ]
             })
@@ -1416,6 +1427,8 @@ export const BookmarkForm = function({
     this.control.bookmark.display.name.text.update();
 
     this.control.bookmark.url.update();
+
+    this.control.bookmark.hidden.show.update();
 
   };
 

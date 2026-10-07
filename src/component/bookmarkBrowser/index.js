@@ -259,7 +259,7 @@ bookmarkBrowser.convertFolder = (node, existingMap) => {
   return folder;
 };
 
-bookmarkBrowser.convertTreeToGroups = (tree, existingMap) => {
+bookmarkBrowser.convertTreeToGroups = (tree, existingMap, existingGroupMap) => {
   if (!tree || tree.length === 0) return [];
   const root = tree[0];
   const groups = [];
@@ -281,9 +281,14 @@ bookmarkBrowser.convertTreeToGroups = (tree, existingMap) => {
     });
 
     if (items.length > 0) {
-      const groupObj = JSON.parse(JSON.stringify(groupDefault));
-      groupObj.name.text = categoryNode.title || 'Bookmarks';
-      groupObj.name.show = true;
+      const title = categoryNode.title || 'Bookmarks';
+      const existingGroup = existingGroupMap && existingGroupMap.get(title);
+      const groupObj = existingGroup ? JSON.parse(JSON.stringify(existingGroup)) : JSON.parse(JSON.stringify(groupDefault));
+      groupObj.name.text = title;
+      if (!existingGroup) {
+        groupObj.name.show = true;
+        groupObj.hidden = false;
+      }
       groupObj.items = items;
       groups.push(groupObj);
     }
@@ -309,14 +314,14 @@ bookmarkBrowser.makeSummary = (groups) => {
   if (!groups || !Array.isArray(groups)) return '';
   const serializeItem = (item) => {
     if (item.isSeparator) {
-      return `SEP`;
+      return `SEP:${item.hidden ? 'H' : 'V'}`;
     }
     if (item.isFolder) {
-      return `F:${item.display?.name?.text || ''}:[${(item.items || []).map(serializeItem).join(',')}]`;
+      return `F:${item.display?.name?.text || ''}:${item.hidden ? 'H' : 'V'}:[${(item.items || []).map(serializeItem).join(',')}]`;
     }
-    return `${item.url}|${item.display?.name?.text || ''}|${item.display?.visual?.type || ''}|${item.display?.visual?.image?.url || ''}`;
+    return `${item.url}|${item.display?.name?.text || ''}|${item.display?.visual?.type || ''}|${item.display?.visual?.image?.url || ''}|${item.hidden ? 'H' : 'V'}`;
   };
-  return groups.map((g) => `${g.name?.text || ''}:${(g.items || []).map(serializeItem).join(',')}`).join(';;;');
+  return groups.map((g) => `${g.name?.text || ''}:${g.hidden ? 'H' : 'V'}:${(g.items || []).map(serializeItem).join(',')}`).join(';;;');
 };
 
 bookmarkBrowser.getApi = () => {
@@ -381,6 +386,7 @@ bookmarkBrowser.sync = async ({ force = false, silent = false } = {}) => {
   }
 
   const existingMap = new Map();
+  const existingGroupMap = new Map();
   const populateMap = (items) => {
     if (!items || !Array.isArray(items)) return;
     items.forEach((item) => {
@@ -393,11 +399,14 @@ bookmarkBrowser.sync = async ({ force = false, silent = false } = {}) => {
   };
   if (bookmark.all && Array.isArray(bookmark.all)) {
     bookmark.all.forEach((g) => {
+      if (g.name && g.name.text) {
+        existingGroupMap.set(g.name.text, g);
+      }
       populateMap(g.items);
     });
   }
 
-  const newGroups = bookmarkBrowser.convertTreeToGroups(tree, existingMap);
+  const newGroups = bookmarkBrowser.convertTreeToGroups(tree, existingMap, existingGroupMap);
   if (newGroups.length === 0) {
     return { success: false, reason: 'no_bookmarks_found' };
   }

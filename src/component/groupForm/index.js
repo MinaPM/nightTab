@@ -104,6 +104,15 @@ export const GroupForm = function({
         labelText: message.get('groupFormOpenAllShowLabel'),
         description: message.get('groupFormOpenAllShowDescription')
       })
+    },
+    hidden: {
+      show: new Control_checkbox({
+        object: groupData.group,
+        path: 'hidden',
+        id: 'group-hidden',
+        labelText: message.get('groupFormHideLabel') || 'Hide Group',
+        description: message.get('groupFormHideDescription') || 'Hide this group and all its bookmarks from the new tab page.'
+      })
     }
   };
 
@@ -131,6 +140,7 @@ export const GroupForm = function({
   this.update = () => {
     this.control.group.name.text.update();
     this.control.group.name.show.update();
+    this.control.group.hidden.show.update();
   };
 
   this.assemble = () => {
@@ -160,7 +170,9 @@ export const GroupForm = function({
                         ]
                       })
                     ]
-                  })
+                  }),
+                  node('hr'),
+                  this.control.group.hidden.show.wrap()
                 ]
               })
             ]

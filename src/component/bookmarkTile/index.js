@@ -7,6 +7,7 @@ import { group } from '../group';
 import { groupAndBookmark } from '../groupAndBookmark';
 
 import { Button } from '../button';
+import { icon } from '../icon';
 import { Video } from '../video';
 import { Modal } from '../modal';
 import { StagedBookmark } from '../stagedBookmark';
@@ -114,6 +115,35 @@ const BookmarkTile = function({
         bookmark.item.mod.move(bookmarkData);
 
         groupAndBookmark.render();
+
+        data.save();
+
+      }
+    }),
+    hide: new Button({
+      text: bookmarkData.link.hidden ? message.get('bookmarkTileControlUnhide') : message.get('bookmarkTileControlHide'),
+      srOnly: true,
+      iconName: bookmarkData.link.hidden ? 'eye' : 'eyeHide',
+      style: ['link'],
+      title: bookmarkData.link.hidden ? message.get('bookmarkTileControlUnhide') : message.get('bookmarkTileControlHide'),
+      classList: ['bookmark-control-button', 'bookmark-control-hide'],
+      func: () => {
+
+        bookmarkData.link.hidden = !bookmarkData.link.hidden;
+
+        if (bookmarkData.link.hidden) {
+          this.element.bookmark.classList.add('is-bookmark-hidden');
+          this.control.button.hide.icon('eye');
+          this.control.button.hide.title(message.get('bookmarkTileControlUnhide'));
+          this.control.button.hide.text(message.get('bookmarkTileControlUnhide'));
+        } else {
+          this.element.bookmark.classList.remove('is-bookmark-hidden');
+          this.control.button.hide.icon('eyeHide');
+          this.control.button.hide.title(message.get('bookmarkTileControlHide'));
+          this.control.button.hide.text(message.get('bookmarkTileControlHide'));
+        }
+
+        this.updateHiddenBadge();
 
         data.save();
 
@@ -246,10 +276,31 @@ const BookmarkTile = function({
 
   };
 
+  this.updateHiddenBadge = () => {
+    let badge = this.element.bookmark.querySelector('.bookmark-hidden-badge');
+    if (bookmarkData.link.hidden) {
+      if (!badge) {
+        badge = node('span|class:bookmark-hidden-badge,title:Hidden bookmark');
+        badge.appendChild(icon.render('eyeHide'));
+        this.element.bookmark.appendChild(badge);
+      }
+    } else {
+      if (badge) {
+        badge.remove();
+      }
+    }
+  };
+
   this.style = (newBookmarkData) => {
 
     if (newBookmarkData) {
       bookmarkData = newBookmarkData;
+    }
+
+    if (bookmarkData.link.hidden) {
+      this.element.bookmark.classList.add('is-bookmark-hidden');
+    } else {
+      this.element.bookmark.classList.remove('is-bookmark-hidden');
     }
 
     if (bookmarkData.link.isSeparator) {
@@ -622,11 +673,15 @@ const BookmarkTile = function({
 
     this.element.front.appendChild(this.element.content.link);
 
+    this.updateHiddenBadge();
+
     this.element.control.appendChild(this.control.button.left.button);
 
     this.element.control.appendChild(this.control.button.sort.button);
 
     this.element.control.appendChild(this.control.button.right.button);
+
+    this.element.control.appendChild(this.control.button.hide.button);
 
     this.element.control.appendChild(this.control.button.edit.button);
 

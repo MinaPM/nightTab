@@ -97,6 +97,35 @@ export const GroupArea = function({
 
       }
     }),
+    hide: new Button({
+      text: groupData.group.hidden ? message.get('groupAreaControlUnhide') : message.get('groupAreaControlHide'),
+      srOnly: true,
+      iconName: groupData.group.hidden ? 'eye' : 'eyeHide',
+      style: ['line'],
+      title: groupData.group.hidden ? message.get('groupAreaControlUnhide') : message.get('groupAreaControlHide'),
+      classList: ['group-control-button', 'group-control-hide'],
+      func: () => {
+
+        groupData.group.hidden = !groupData.group.hidden;
+
+        if (groupData.group.hidden) {
+          this.element.group.classList.add('is-group-hidden');
+          this.control.button.hide.icon('eye');
+          this.control.button.hide.title(message.get('groupAreaControlUnhide'));
+          this.control.button.hide.text(message.get('groupAreaControlUnhide'));
+        } else {
+          this.element.group.classList.remove('is-group-hidden');
+          this.control.button.hide.icon('eyeHide');
+          this.control.button.hide.title(message.get('groupAreaControlHide'));
+          this.control.button.hide.text(message.get('groupAreaControlHide'));
+        }
+
+        this.updateHiddenBadge();
+
+        data.save();
+
+      }
+    }),
     edit: new Button({
       text: message.get('groupAreaControlEdit'),
       srOnly: true,
@@ -386,15 +415,36 @@ export const GroupArea = function({
     }
   };
 
+  this.updateHiddenBadge = () => {
+    let badge = this.element.name.name.querySelector('.group-hidden-badge');
+    if (groupData.group.hidden) {
+      if (!badge) {
+        badge = node('span|class:group-hidden-badge');
+        badge.textContent = 'Hidden';
+        this.element.name.name.appendChild(badge);
+      }
+    } else {
+      if (badge) {
+        badge.remove();
+      }
+    }
+  };
+
   this.assemble = () => {
 
     this.updateBreadcrumb();
+
+    if (groupData.group.hidden) {
+      this.element.group.classList.add('is-group-hidden');
+    }
 
     this.element.control.group.appendChild(this.control.button.up.button);
 
     this.element.control.group.appendChild(this.control.button.sort.button);
 
     this.element.control.group.appendChild(this.control.button.down.button);
+
+    this.element.control.group.appendChild(this.control.button.hide.button);
 
     this.element.control.group.appendChild(this.control.button.edit.button);
 
@@ -406,6 +456,7 @@ export const GroupArea = function({
 
     if (groupData.group.name.show && isValidString(groupData.group.name.text)) {
       this.element.header.appendChild(this.element.name.name);
+      this.updateHiddenBadge();
     }
 
     if (groupData.group.toolbar.collapse.show) {

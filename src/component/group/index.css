@@ -330,3 +330,38 @@
     transform: none !important;
   }
 }
+
+/* Hidden Group */
+.group.is-group-hidden {
+  display: none !important;
+}
+
+.is-group-edit .group.is-group-hidden,
+.is-bookmark-edit .group.is-group-hidden {
+  display: flex !important;
+  opacity: 0.65;
+  outline: 2px dashed hsla(var(--theme-primary-040), 0.6);
+  outline-offset: 6px;
+  border-radius: calc(var(--theme-radius) * 0.01em);
+  transition: opacity var(--layout-transition-fast), outline var(--layout-transition-fast);
+}
+
+.is-group-edit .group.is-group-hidden:hover,
+.is-bookmark-edit .group.is-group-hidden:hover {
+  opacity: 0.95;
+}
+
+.group-hidden-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.55em;
+  padding: 0.15em 0.5em;
+  border-radius: calc(var(--theme-radius) * 0.008em);
+  background-color: hsla(var(--theme-primary-030), 0.7);
+  color: hsl(var(--theme-primary-text-010));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-left: 0.5em;
+  vertical-align: middle;
+}

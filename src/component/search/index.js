@@ -158,6 +158,9 @@ export const Search = function () {
         if (entry.isSeparator) {
           return false;
         }
+        if (entry.hidden && !state.get.current().bookmark.edit) {
+          return false;
+        }
         const matchUrl = isValidString(entry.url) && entry.url.toLowerCase().includes(searchString);
         const matchName = isValidString(entry.display?.name?.text) && trimString(entry.display.name.text).toLowerCase().includes(searchString);
         if (matchUrl || matchName) {
@@ -174,6 +177,10 @@ export const Search = function () {
       };
 
       bookmark.all.forEach((item) => {
+
+        if (item.hidden && !state.get.current().bookmark.edit) {
+          return;
+        }
 
         item.items.forEach((entry) => {
 

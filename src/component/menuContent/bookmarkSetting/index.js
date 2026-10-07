@@ -59,6 +59,9 @@ bookmarkSetting.disable = () => {
     if (bookmarkSetting.control.general.separatorStyle) {
       bookmarkSetting.control.general.separatorStyle.enable();
     }
+    if (bookmarkSetting.control.general.unhideAll) {
+      bookmarkSetting.control.general.unhideAll.enable();
+    }
     bookmarkSetting.control.general.newTab.enable();
     bookmarkSetting.control.style.enable();
     bookmarkSetting.control.orientation.orientationElement.enable();
@@ -86,6 +89,9 @@ bookmarkSetting.disable = () => {
     }
     if (bookmarkSetting.control.general.separatorStyle) {
       bookmarkSetting.control.general.separatorStyle.disable();
+    }
+    if (bookmarkSetting.control.general.unhideAll) {
+      bookmarkSetting.control.general.unhideAll.disable();
     }
     bookmarkSetting.control.general.newTab.disable();
     bookmarkSetting.control.style.disable();
@@ -335,6 +341,27 @@ bookmarkSetting.general = (parent) => {
     }
   });
 
+  bookmarkSetting.control.general.unhideAll = new Button({
+    text: 'Unhide all bookmarks',
+    style: ['line'],
+    func: () => {
+      const unhideRecursive = (items) => {
+        if (!items || !Array.isArray(items)) return;
+        items.forEach((item) => {
+          item.hidden = false;
+          if (item.isFolder && item.items) {
+            unhideRecursive(item.items);
+          }
+        });
+      };
+      bookmark.all.forEach((g) => {
+        unhideRecursive(g.items);
+      });
+      groupAndBookmark.render();
+      data.save();
+    }
+  });
+
   bookmarkSetting.control.general.area = node('div', [
     bookmarkSetting.control.general.browserSync.wrap(),
     form.wrap({
@@ -351,7 +378,13 @@ bookmarkSetting.general = (parent) => {
     bookmarkSetting.control.general.shadowShow.wrap(),
     bookmarkSetting.control.general.hoverScaleShow.wrap(),
     bookmarkSetting.control.general.newTab.wrap(),
-    bookmarkSetting.control.general.size.wrap()
+    bookmarkSetting.control.general.size.wrap(),
+    node('hr'),
+    form.wrap({
+      children: [
+        bookmarkSetting.control.general.unhideAll.button
+      ]
+    })
   ]);
 
   bookmarkSetting.control.general.collapse = new Collapse({

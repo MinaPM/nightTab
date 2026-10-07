@@ -1931,6 +1931,22 @@
     "message": "Remove this bookmark",
     "description": "Button for bookmark tile remove control."
   },
+  "bookmarkTileControlHide": {
+    "message": "Hide this bookmark",
+    "description": "Button for bookmark tile hide control."
+  },
+  "bookmarkTileControlUnhide": {
+    "message": "Unhide this bookmark",
+    "description": "Button for bookmark tile unhide control."
+  },
+  "bookmarkFormHideLabel": {
+    "message": "Hide Bookmark",
+    "description": "Label for hiding bookmark."
+  },
+  "bookmarkFormHideDescription": {
+    "message": "Hide this bookmark from the new tab page.",
+    "description": "Description for hiding bookmark."
+  },
   "bookmarkAddHeading": {
     "message": "Add a new Bookmark",
     "description": "Heading for bookmark add modal."
@@ -2418,6 +2434,22 @@
   "groupAreaControlRemove": {
     "message": "Remove this group",
     "description": "Button for bookmark group remove control."
+  },
+  "groupAreaControlHide": {
+    "message": "Hide this group",
+    "description": "Button for bookmark group hide control."
+  },
+  "groupAreaControlUnhide": {
+    "message": "Unhide this group",
+    "description": "Button for bookmark group unhide control."
+  },
+  "groupFormHideLabel": {
+    "message": "Hide Group",
+    "description": "Label for hiding bookmark group."
+  },
+  "groupFormHideDescription": {
+    "message": "Hide this group and all its bookmarks from the new tab page.",
+    "description": "Description for hiding bookmark group."
   },
   "groupAreaControlOpenAll": {
     "message": "Open all bookmarks in this group",

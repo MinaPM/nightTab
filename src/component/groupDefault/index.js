@@ -1,6 +1,7 @@
 export const groupDefault = {
   name: { text: '', show: true },
   collapse: false,
+  hidden: false,
   toolbar: {
     size: 100,
     openAll: { show: true },

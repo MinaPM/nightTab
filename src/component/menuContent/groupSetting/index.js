@@ -100,6 +100,9 @@ groupSetting.disable = () => {
     groupSetting.control.toolbar.openAll.hide.enable();
     groupSetting.control.toolbar.openAll.show.enable();
     groupSetting.control.toolbar.openAll.helper.enable();
+    if (groupSetting.control.collapse.unhideAll) {
+      groupSetting.control.collapse.unhideAll.enable();
+    }
   } else {
     groupSetting.control.alignment.justify.disable();
     groupSetting.control.alignment.order.disable();
@@ -118,6 +121,9 @@ groupSetting.disable = () => {
     groupSetting.control.toolbar.openAll.hide.disable();
     groupSetting.control.toolbar.openAll.show.disable();
     groupSetting.control.toolbar.openAll.helper.disable();
+    if (groupSetting.control.collapse.unhideAll) {
+      groupSetting.control.collapse.unhideAll.disable();
+    }
   }
 
 };
@@ -367,6 +373,23 @@ groupSetting.collapse = (parent) => {
         data.save();
 
       }
+    }),
+    unhideAll: new Button({
+      text: 'Unhide all groups',
+      style: ['line'],
+      func: () => {
+
+        bookmark.all.forEach(item => { item.hidden = false; });
+
+        groupAndBookmark.render();
+
+        groupSetting.edge.name.update();
+
+        groupSetting.edge.toolbar.update();
+
+        data.save();
+
+      }
     })
   };
 
@@ -378,7 +401,8 @@ groupSetting.collapse = (parent) => {
         equalGap: true,
         children: [
           groupSetting.control.collapse.show.wrap(),
-          groupSetting.control.collapse.hide.wrap()
+          groupSetting.control.collapse.hide.wrap(),
+          groupSetting.control.collapse.unhideAll.wrap()
         ]
       })
     ])

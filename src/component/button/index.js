@@ -148,7 +148,20 @@ export const Button = function({
 
     this.buttonText.textContent = newText;
 
-  }
+  };
+
+  this.icon = (newIconName) => {
+    const existingIcon = this.button.querySelector('.icon');
+    if (existingIcon) {
+      existingIcon.replaceWith(icon.render(newIconName));
+    } else {
+      this.button.prepend(icon.render(newIconName));
+    }
+  };
+
+  this.title = (newTitle) => {
+    this.button.setAttribute('title', newTitle);
+  };
 
   this.wrap = () => {
     return form.wrap({
