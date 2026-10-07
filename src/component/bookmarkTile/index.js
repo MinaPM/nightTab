@@ -17,6 +17,7 @@ import { node } from '../../utility/node';
 import { complexNode } from '../../utility/complexNode';
 import { isValidString } from '../../utility/isValidString';
 import { trimString } from '../../utility/trimString';
+import { getFaviconUrl } from '../../utility/getFaviconUrl';
 
 const BookmarkTile = function({
   bookmarkData = {},
@@ -442,35 +443,114 @@ const BookmarkTile = function({
 
   };
 
+  this.createFolderGrid = (items) => {
+    const grid = node('div|class:bookmark-display-visual-folder-grid');
+    const childItems = items.slice(0, 4);
+
+    grid.classList.add('grid-' + Math.min(childItems.length, 4));
+
+    const shape = (bookmarkData.link.folderPreviewShape && bookmarkData.link.folderPreviewShape !== 'default')
+      ? bookmarkData.link.folderPreviewShape
+      : (state.get.current()?.bookmark?.folderPreviewShape || 'tile');
+
+    if (shape === 'circle') {
+      grid.classList.add('is-shape-circle');
+    } else {
+      grid.classList.add('is-shape-tile');
+    }
+
+    let cache = {};
+    try {
+      const raw = localStorage.getItem('nightTabFaviconCache');
+      cache = raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      cache = {};
+    }
+    const provider = state.get.current()?.bookmark?.faviconService || 'native';
+
+    childItems.forEach((child) => {
+      const itemEl = node('div|class:bookmark-folder-mini-item');
+      if (child.isFolder) {
+        itemEl.appendChild(node('span|class:bookmark-folder-mini-icon fas fa-folder'));
+      } else if (child.display?.visual?.type === 'image' && isValidString(child.display?.visual?.image?.url)) {
+        const img = node('span|class:bookmark-folder-mini-img');
+        img.style.backgroundImage = 'url("' + trimString(child.display.visual.image.url) + '")';
+        itemEl.appendChild(img);
+      } else if (child.url) {
+        const fav = getFaviconUrl(child.url, provider, cache);
+        if (fav) {
+          const img = node('span|class:bookmark-folder-mini-img');
+          img.style.backgroundImage = 'url("' + fav + '")';
+          itemEl.appendChild(img);
+        } else if (child.display?.visual?.letter?.text) {
+          const letter = node('span|class:bookmark-folder-mini-letter');
+          letter.textContent = child.display.visual.letter.text.slice(0, 2);
+          itemEl.appendChild(letter);
+        } else {
+          const letter = node('span|class:bookmark-folder-mini-letter');
+          const txt = (child.display?.name?.text || child.url || '?').charAt(0).toUpperCase();
+          letter.textContent = txt;
+          itemEl.appendChild(letter);
+        }
+      } else if (child.display?.visual?.type === 'icon' && isValidString(child.display?.visual?.icon?.name)) {
+        itemEl.appendChild(node('span|class:bookmark-folder-mini-icon ' + (child.display.visual.icon.prefix || 'fas') + ' fa-' + child.display.visual.icon.name));
+      } else if (child.display?.visual?.letter?.text) {
+        const letter = node('span|class:bookmark-folder-mini-letter');
+        letter.textContent = child.display.visual.letter.text.slice(0, 2);
+        itemEl.appendChild(letter);
+      } else {
+        const letter = node('span|class:bookmark-folder-mini-letter');
+        const txt = (child.display?.name?.text || child.url || '?').charAt(0).toUpperCase();
+        letter.textContent = txt;
+        itemEl.appendChild(letter);
+      }
+      grid.appendChild(itemEl);
+    });
+
+    return grid;
+  };
+
   this.assemble = () => {
 
     if (bookmarkData.link.display.visual.show || bookmarkData.link.display.name.show) {
       if (bookmarkData.link.display.visual.show) {
-        switch (bookmarkData.link.display.visual.type) {
-          case 'letter':
-            if (isValidString(bookmarkData.link.display.visual.letter.text)) {
-              this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.letter);
-              this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
-            }
-            break;
+        let isFolderPreview = false;
+        if (bookmarkData.link.isFolder && state.get.current()?.bookmark?.folderPreview !== false) {
+          const items = bookmarkData.link.items || [];
+          if (items.length > 0 && bookmarkData.link.display.visual.type === 'icon' && bookmarkData.link.display.visual.icon.name === 'folder') {
+            isFolderPreview = true;
+            this.element.content.display.visual.visual.appendChild(this.createFolderGrid(items));
+            this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
+          }
+        }
 
-          case 'icon':
-            if (isValidString(bookmarkData.link.display.visual.icon.name)) {
-              this.element.content.display.visual.icon.appendChild(this.element.content.display.visual.faIcon);
-              this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.icon);
-              this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
-            }
-            break;
+        if (!isFolderPreview) {
+          switch (bookmarkData.link.display.visual.type) {
+            case 'letter':
+              if (isValidString(bookmarkData.link.display.visual.letter.text)) {
+                this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.letter);
+                this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
+              }
+              break;
 
-          case 'image':
-            if (isValidString(bookmarkData.link.display.visual.image.url)) {
-              this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.image);
-              this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
-            } else if (isValidString(bookmarkData.link.display.visual.letter.text)) {
-              this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.letter);
-              this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
-            }
-            break;
+            case 'icon':
+              if (isValidString(bookmarkData.link.display.visual.icon.name)) {
+                this.element.content.display.visual.icon.appendChild(this.element.content.display.visual.faIcon);
+                this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.icon);
+                this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
+              }
+              break;
+
+            case 'image':
+              if (isValidString(bookmarkData.link.display.visual.image.url)) {
+                this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.image);
+                this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
+              } else if (isValidString(bookmarkData.link.display.visual.letter.text)) {
+                this.element.content.display.visual.visual.appendChild(this.element.content.display.visual.letter);
+                this.element.content.display.display.appendChild(this.element.content.display.visual.visual);
+              }
+              break;
+          }
         }
       }
 

@@ -237,57 +237,77 @@
 .group-breadcrumb {
   display: flex;
   align-items: center;
-  gap: 0.6em;
-  font-size: 1.1em;
-  flex-wrap: wrap;
+  gap: calc(var(--layout-space) * 0.5 * var(--layout-gutter));
+  height: 2.5em;
+  min-width: 0;
   animation: appear var(--layout-transition-fast) var(--layout-timing-ease);
 }
 
-.group-breadcrumb-back.button {
-  padding: 0.25em 0.65em;
-  font-size: 0.85em;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  transition: transform var(--layout-transition-extra-fast), background-color var(--layout-transition-extra-fast);
-}
-
-.group-breadcrumb-back.button:hover {
-  transform: translateX(-3px);
-}
-
-.group-breadcrumb-back.button:active {
-  transform: translateX(-5px);
+.group-breadcrumb-back {
+  flex-shrink: 0;
 }
 
 .group-breadcrumb-trail {
   display: flex;
   align-items: center;
-  gap: 0.4em;
-  flex-wrap: wrap;
+  margin: 0;
+  min-width: 0;
+  white-space: nowrap;
+  font-family: var(--theme-font-display-name);
+  font-weight: var(--theme-font-display-weight);
+  font-style: var(--theme-font-display-style);
+  font-size: 1.5em;
+  line-height: 1;
 }
 
 .group-breadcrumb-link {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: inherit;
   color: inherit;
-  opacity: 0.65;
+  opacity: 0.55;
   text-decoration: none;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  max-width: 15em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: opacity var(--layout-transition-fast), color var(--layout-transition-fast);
 }
 
-.group-breadcrumb-link:hover {
+.group-breadcrumb-link:hover,
+.group-breadcrumb-link:focus {
   opacity: 1;
-  text-decoration: underline;
+  color: hsl(var(--theme-accent));
+}
+
+.group-breadcrumb-link:focus-visible {
+  outline: 2px solid hsl(var(--theme-accent));
+  outline-offset: 2px;
+  border-radius: calc(var(--theme-radius) * 0.01em);
 }
 
 .group-breadcrumb-sep {
-  opacity: 0.4;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: normal;
+  opacity: 0.35;
+  margin: 0 0.35em;
   user-select: none;
 }
 
 .group-breadcrumb-current {
-  font-weight: 600;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  color: inherit;
   opacity: 1;
+  max-width: 15em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bookmark.is-bookmark-folder {
@@ -304,7 +324,7 @@
   .group-body.is-group-entering .bookmark,
   .is-group-drilldown .bookmark,
   .group-breadcrumb,
-  .group-breadcrumb-back.button {
+  .group-breadcrumb-back {
     transition: none !important;
     animation: none !important;
     transform: none !important;

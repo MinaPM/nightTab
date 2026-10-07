@@ -595,6 +595,110 @@
   font-size: calc(var(--bookmark-display-visual-size) * 0.1em);
 }
 
+.bookmark-display-visual-folder-grid {
+  width: 1.15em;
+  height: 1.15em;
+  font-size: calc(var(--bookmark-display-visual-size) * 0.1em);
+  background-color: hsla(var(--theme-primary-020), 0.7);
+  border: 1px solid hsla(var(--theme-primary-040), 0.5);
+  border-radius: calc(var(--theme-radius) * 0.01em);
+  box-shadow: 0 0.05em 0.15em rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  padding: 0.1em;
+  display: grid;
+  gap: 0.08em;
+  align-items: center;
+  justify-items: center;
+  overflow: hidden;
+  transition: transform var(--layout-transition-fast), background-color var(--layout-transition-fast), border-color var(--layout-transition-fast), border-radius var(--layout-transition-fast);
+}
+
+.bookmark:hover .bookmark-display-visual-folder-grid,
+.bookmark:focus .bookmark-display-visual-folder-grid {
+  background-color: hsla(var(--theme-primary-030), 0.85);
+  border-color: hsla(var(--theme-accent), 0.5);
+  transform: scale(1.05);
+}
+
+.bookmark-display-visual-folder-grid.is-shape-tile {
+  border-radius: calc(var(--theme-radius) * 0.01em);
+}
+
+.bookmark-display-visual-folder-grid.is-shape-circle {
+  border-radius: 50%;
+}
+
+.bookmark-display-visual-folder-grid.grid-1 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.bookmark-display-visual-folder-grid.grid-2 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  align-content: center;
+}
+
+.bookmark-display-visual-folder-grid.grid-3,
+.bookmark-display-visual-folder-grid.grid-4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.bookmark-folder-mini-item {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 0.45em;
+  max-height: 0.45em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.grid-1 .bookmark-folder-mini-item {
+  width: 100%;
+  height: 100%;
+  max-width: 0.75em;
+  max-height: 0.75em;
+}
+
+.bookmark-folder-mini-img {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: block;
+  border-radius: calc(var(--theme-radius) * 0.004em);
+}
+
+.bookmark-folder-mini-icon {
+  font-size: 0.42em;
+  color: hsl(var(--theme-accent));
+  line-height: 1;
+}
+
+.grid-1 .bookmark-folder-mini-icon {
+  font-size: 0.6em;
+}
+
+.bookmark-folder-mini-letter {
+  font-size: 0.38em;
+  font-weight: 600;
+  color: hsl(var(--theme-primary-text-010));
+  text-transform: uppercase;
+  line-height: 1;
+  font-family: var(--theme-font-display-name);
+}
+
+.grid-1 .bookmark-folder-mini-letter {
+  font-size: 0.55em;
+}
+
 .bookmark-display-name {
   color: hsl(var(--bookmark-display-name-color));
   font-size: calc(var(--bookmark-display-name-size) * 0.1em);

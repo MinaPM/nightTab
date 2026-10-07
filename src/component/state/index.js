@@ -71,7 +71,9 @@ state.default = {
     add: false,
     show: true,
     browserSync: true,
-    faviconService: 'native'
+    faviconService: 'native',
+    folderPreview: true,
+    folderPreviewShape: 'tile'
   },
   group: {
     area: { justify: 'left' },
@@ -281,6 +283,12 @@ state.set = {
       }
       if (state.current.bookmark && !state.current.bookmark.faviconService) {
         state.current.bookmark.faviconService = 'native';
+      }
+      if (state.current.bookmark && state.current.bookmark.folderPreview === undefined) {
+        state.current.bookmark.folderPreview = true;
+      }
+      if (state.current.bookmark && !state.current.bookmark.folderPreviewShape) {
+        state.current.bookmark.folderPreviewShape = 'tile';
       }
       state.current.group = dataToRestore.state.group;
       state.current.toolbar = dataToRestore.state.toolbar;

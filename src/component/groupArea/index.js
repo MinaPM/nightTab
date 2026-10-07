@@ -318,24 +318,38 @@ export const GroupArea = function({
       if (state.get.current().group.edit) {
         this.control.enable();
       }
+      if (!groupData.group.name.show || !isValidString(groupData.group.name.text)) {
+        if (this.element.header.contains(this.element.name.name)) {
+          this.element.header.removeChild(this.element.name.name);
+        }
+      }
     } else {
       this.element.group.classList.add('is-group-drilldown');
       this.control.disable();
+      if (!this.element.header.contains(this.element.name.name)) {
+        if (this.element.header.contains(this.element.toolbar.toolbar)) {
+          this.element.header.insertBefore(this.element.name.name, this.element.toolbar.toolbar);
+        } else {
+          this.element.header.appendChild(this.element.name.name);
+        }
+      }
 
       const breadcrumbWrap = node('div|class:group-breadcrumb');
 
       const backButton = new Button({
         text: 'Back',
         style: ['line'],
+        title: 'Back',
+        srOnly: true,
         iconName: 'arrowBack',
-        classList: ['group-breadcrumb-back'],
+        classList: ['group-toolbar-button', 'group-breadcrumb-back'],
         func: () => {
           group.nav.back(groupIndex);
         }
       });
       breadcrumbWrap.appendChild(backButton.button);
 
-      const pathTrail = node('span|class:group-breadcrumb-trail');
+      const pathTrail = node('h1|class:group-name-text group-breadcrumb-trail');
 
       const rootLink = node('a|class:group-breadcrumb-link,href:#');
       rootLink.textContent = rootName;
@@ -347,7 +361,7 @@ export const GroupArea = function({
 
       stack.forEach((folder, idx) => {
         const sep = node('span|class:group-breadcrumb-sep');
-        sep.textContent = ' / ';
+        sep.textContent = '/';
         pathTrail.appendChild(sep);
 
         const folderName = folder.display?.name?.text || folder.name || 'Folder';

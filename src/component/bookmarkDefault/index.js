@@ -15,5 +15,6 @@ export const bookmarkDefault = {
   background: { show: false, type: 'image', opacity: 100, image: { url: '' }, video: { url: '' } },
   border: 0,
   shape: { wide: false, tall: false },
-  timestamp: null
+  timestamp: null,
+  folderPreviewShape: 'default'
 };

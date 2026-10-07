@@ -16,6 +16,7 @@ import { Control_radio } from '../../control/radio';
 import { Control_radioGrid } from '../../control/radioGrid';
 import { Control_slider } from '../../control/slider';
 import { Control_label } from '../../control/label';
+import { Control_checkbox } from '../../control/checkbox';
 
 import { node } from '../../../utility/node';
 import { applyCSSVar } from '../../../utility/applyCSSVar';

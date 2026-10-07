@@ -46,6 +46,16 @@ bookmarkSetting.disable = () => {
     bookmarkSetting.control.general.lineShow.enable();
     bookmarkSetting.control.general.shadowShow.enable();
     bookmarkSetting.control.general.hoverScaleShow.enable();
+    if (bookmarkSetting.control.general.folderPreview) {
+      bookmarkSetting.control.general.folderPreview.enable();
+    }
+    if (bookmarkSetting.control.general.folderPreviewShape) {
+      if (state.get.current().bookmark.folderPreview) {
+        bookmarkSetting.control.general.folderPreviewShape.enable();
+      } else {
+        bookmarkSetting.control.general.folderPreviewShape.disable();
+      }
+    }
     bookmarkSetting.control.general.newTab.enable();
     bookmarkSetting.control.style.enable();
     bookmarkSetting.control.orientation.orientationElement.enable();
@@ -65,6 +75,12 @@ bookmarkSetting.disable = () => {
     bookmarkSetting.control.general.lineShow.disable();
     bookmarkSetting.control.general.shadowShow.disable();
     bookmarkSetting.control.general.hoverScaleShow.disable();
+    if (bookmarkSetting.control.general.folderPreview) {
+      bookmarkSetting.control.general.folderPreview.disable();
+    }
+    if (bookmarkSetting.control.general.folderPreviewShape) {
+      bookmarkSetting.control.general.folderPreviewShape.disable();
+    }
     bookmarkSetting.control.general.newTab.disable();
     bookmarkSetting.control.style.disable();
     bookmarkSetting.control.orientation.orientationElement.disable();
@@ -263,6 +279,40 @@ bookmarkSetting.general = (parent) => {
     }
   });
 
+  bookmarkSetting.control.general.folderPreview = new Control_checkbox({
+    object: state.get.current(),
+    id: 'bookmark-folder-preview',
+    path: 'bookmark.folderPreview',
+    labelText: 'Folder Icon Previews',
+    description: 'Display a mini grid of website icons inside folder bookmark tiles',
+    action: () => {
+      if (bookmarkSetting.control.general.folderPreviewShape) {
+        if (state.get.current().bookmark.folderPreview) {
+          bookmarkSetting.control.general.folderPreviewShape.enable();
+        } else {
+          bookmarkSetting.control.general.folderPreviewShape.disable();
+        }
+      }
+      groupAndBookmark.render();
+      data.save();
+    }
+  });
+
+  bookmarkSetting.control.general.folderPreviewShape = new Control_radio({
+    object: state.get.current(),
+    label: 'Folder Preview Shape',
+    radioGroup: [
+      { id: 'bookmark-folder-preview-shape-tile', labelText: 'Match Tile Shape', description: 'Grouped icons shape matches the tile theme radius.', value: 'tile' },
+      { id: 'bookmark-folder-preview-shape-circle', labelText: 'Circle', description: 'Grouped icons shape is a circle.', value: 'circle' }
+    ],
+    groupName: 'bookmark-folder-preview-shape',
+    path: 'bookmark.folderPreviewShape',
+    action: () => {
+      groupAndBookmark.render();
+      data.save();
+    }
+  });
+
   bookmarkSetting.control.general.area = node('div', [
     bookmarkSetting.control.general.browserSync.wrap(),
     form.wrap({
@@ -271,6 +321,8 @@ bookmarkSetting.general = (parent) => {
       ]
     }),
     bookmarkSetting.control.general.faviconService.wrap(),
+    bookmarkSetting.control.general.folderPreview.wrap(),
+    bookmarkSetting.control.general.folderPreviewShape.wrap(),
     bookmarkSetting.control.general.urlShow.wrap(),
     bookmarkSetting.control.general.lineShow.wrap(),
     bookmarkSetting.control.general.shadowShow.wrap(),

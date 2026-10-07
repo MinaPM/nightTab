@@ -255,6 +255,20 @@ export const BookmarkForm = function({
             this.preview.update.assemble(bookmarkData);
           }
         }),
+        folderPreviewShape: bookmarkData.link.isFolder ? new Control_radio({
+          object: bookmarkData.link,
+          label: 'Folder Preview Shape',
+          radioGroup: [
+            { id: 'display-folder-preview-shape-default', labelText: 'Default (Use Global Setting)', value: 'default' },
+            { id: 'display-folder-preview-shape-tile', labelText: 'Match Tile Shape', value: 'tile' },
+            { id: 'display-folder-preview-shape-circle', labelText: 'Circle', value: 'circle' }
+          ],
+          groupName: 'display-folder-preview-shape-' + (bookmarkData.link.timestamp || randomString(6)),
+          path: 'folderPreviewShape',
+          action: () => {
+            this.preview.update.assemble(bookmarkData);
+          }
+        }) : false,
         size: new Control_sliderSlim({
           object: bookmarkData.link,
           path: 'display.visual.size',
@@ -838,7 +852,11 @@ export const BookmarkForm = function({
                     ]
                   })
                 ]
-              })
+              }),
+              ...(this.control.bookmark.display.visual.folderPreviewShape ? [
+                node('hr'),
+                this.control.bookmark.display.visual.folderPreviewShape.wrap()
+              ] : [])
             ]
           })
         ]
@@ -1200,6 +1218,9 @@ export const BookmarkForm = function({
       this.control.bookmark.display.visual.image.faviconNative.enable();
       this.control.bookmark.display.visual.image.clear.enable();
       this.control.bookmark.display.visual.size.enable();
+      if (this.control.bookmark.display.visual.folderPreviewShape) {
+        this.control.bookmark.display.visual.folderPreviewShape.enable();
+      }
 
       switch (bookmarkData.link.display.visual.type) {
         case 'letter':
@@ -1250,6 +1271,9 @@ export const BookmarkForm = function({
       this.control.bookmark.display.visual.image.faviconNative.disable();
       this.control.bookmark.display.visual.image.clear.disable();
       this.control.bookmark.display.visual.size.disable();
+      if (this.control.bookmark.display.visual.folderPreviewShape) {
+        this.control.bookmark.display.visual.folderPreviewShape.disable();
+      }
     }
 
     if (bookmarkData.link.display.name.show) {
